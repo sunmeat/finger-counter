@@ -4,7 +4,7 @@ import { countFingers } from "./countFingers.js";
 
 const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 const MODEL_URL =
-  "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+    "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
 const FINGER_NAMES = ["Большой", "Указательный", "Средний", "Безымянный", "Мизинец"];
 
@@ -12,7 +12,7 @@ export default function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [status, setStatus] = useState("Загрузка модели…");
-  const [result, setResult] = useState(null); // { count, fingers } | null
+  const [result, setResult] = useState(null); // { count, hands } | null
 
   useEffect(() => {
     let landmarker;
@@ -28,7 +28,7 @@ export default function App() {
         landmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" },
           runningMode: "VIDEO",
-          numHands: 1,
+          numHands: 2, // ← теперь две руки
         });
 
         setStatus("Запрашиваю доступ к камере…");
@@ -41,7 +41,7 @@ export default function App() {
         const video = videoRef.current;
         video.srcObject = stream;
         await video.play();
-        setStatus("Покажите руку в камеру");
+        setStatus("Покажите руку(и) в камеру");
 
         const canvas = canvasRef.current;
         canvas.width = video.videoWidth;
@@ -58,17 +58,25 @@ export default function App() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             if (res.landmarks.length > 0) {
-              const lm = res.landmarks[0];
-              drawing.drawConnectors(lm, HandLandmarker.HAND_CONNECTIONS, {
-                color: "#00e676",
-                lineWidth: 3,
-              });
-              drawing.drawLandmarks(lm, { color: "#ff1744", radius: 3 });
+              let totalCount = 0;
+              const hands = [];
 
-              const r = countFingers(lm);
-              if (r.count !== lastCount) {
-                lastCount = r.count;
-                setResult(r);
+              res.landmarks.forEach((lm) => {
+                // рисуем скелет каждой руки
+                drawing.drawConnectors(lm, HandLandmarker.HAND_CONNECTIONS, {
+                  color: "#00e676",
+                  lineWidth: 3,
+                });
+                drawing.drawLandmarks(lm, { color: "#ff1744", radius: 3 });
+
+                const r = countFingers(lm);
+                totalCount += r.count;
+                hands.push(r);
+              });
+
+              if (totalCount !== lastCount) {
+                lastCount = totalCount;
+                setResult({ count: totalCount, hands });
               }
             } else if (lastCount !== null) {
               lastCount = null;
@@ -95,28 +103,43 @@ export default function App() {
   }, []);
 
   return (
-    <main className="app">
-      <h1>Сколько пальцев?</h1>
+      <main className="app">
+        <h1>Сколько пальцев?</h1>
 
-      <div className="stage">
-        {/* зеркалим и видео, и canvas одинаково */}
-        <video ref={videoRef} playsInline muted />
-        <canvas ref={canvasRef} />
-      </div>
+        <div className="stage">
+          {/* зеркалим и видео, и canvas одинаково */}
+          <video ref={videoRef} playsInline muted />
+          <canvas ref={canvasRef} />
+        </div>
 
-      <div className="count">{result ? result.count : "–"}</div>
+        <div className="count">{result ? result.count : "–"}</div>
 
-      {result ? (
-        <ul className="fingers">
-          {FINGER_NAMES.map((name, i) => (
-            <li key={name} className={result.fingers[i] ? "up" : ""}>
-              {name}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="status">{status}</p>
-      )}
-    </main>
+        {result ? (
+            <>
+              <p className="status">
+                Всего: <strong>{result.count}</strong>
+                {result.hands.length === 2 ? " (две руки)" : " (одна рука)"}
+              </p>
+
+              {/* Детализация по каждой руке */}
+              <div className="hands-detail">
+                {result.hands.map((hand, idx) => (
+                    <div key={idx} className="hand-block">
+                      <h3>Рука {idx + 1}: {hand.count}</h3>
+                      <ul className="fingers">
+                        {FINGER_NAMES.map((name, i) => (
+                            <li key={name} className={hand.fingers[i] ? "up" : ""}>
+                              {name}
+                            </li>
+                        ))}
+                      </ul>
+                    </div>
+                ))}
+              </div>
+            </>
+        ) : (
+            <p className="status">{status}</p>
+        )}
+      </main>
   );
 }
