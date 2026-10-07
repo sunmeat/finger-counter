@@ -43,8 +43,6 @@ export default function useHandTracking({
         let pendingKey = null;
         let pendingFrames = 0;
         let playingKey = "";
-        let lastSoundAt = 0;
-        const SOUND_REFRESH_MS = 900;
 
         function updateSound(plan) {
             if (plan.key === pendingKey) {
@@ -55,26 +53,15 @@ export default function useHandTracking({
             }
 
             if (pendingFrames >= STABLE_FRAMES) {
-                const now = performance.now();
                 const changed = plan.key !== playingKey;
 
                 if (changed) {
                     playingKey = plan.key;
                     player.releaseAll();
+
                     if (plan.key) {
                         player.playNotes(plan.midi);
-                        lastSoundAt = now;
-                    } else {
-                        lastSoundAt = 0;
                     }
-                    return;
-                }
-
-                // Повторно запускаем удерживаемый аккорд до его естественного release.
-                // Это делает звучание непрерывным даже при долгом удержании руки.
-                if (plan.key && now - lastSoundAt >= SOUND_REFRESH_MS) {
-                    player.playNotes(plan.midi);
-                    lastSoundAt = now;
                 }
             }
         }
