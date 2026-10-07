@@ -127,7 +127,8 @@ export const INSTRUMENTS = [
     { id: "wavetable", name: "Wavetable Synth" },
     { id: "piano", name: "Acoustic Piano" },
     { id: "electric", name: "Electric Piano / Organ" },
-    { id: "guitar", name: "Guitar" },
+    { id: "acoustic-guitar", name: "Acoustic Guitar" },
+    { id: "electric-guitar", name: "Electric Guitar" },
 ];
 
 const PIANO_BASE_URL = "https://tonejs.github.io/audio/salamander/";
@@ -231,7 +232,7 @@ function createElectric() {
     return synth;
 }
 
-function createGuitar() {
+function createAcousticGuitar() {
     const synth = new Tone.PolySynth(Tone.PluckSynth, {
         attackNoise: 0.9,
         dampening: 4200,
@@ -241,6 +242,19 @@ function createGuitar() {
     synth.volume.value = -8;
     synth.toDestination();
 
+    return synth;
+}
+
+function createElectricGuitar() {
+    const distortion = new Tone.Distortion(0.28);
+    const chorus = new Tone.Chorus(1.8, 2.5, 0.35).start();
+    const synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: "fatsawtooth", count: 3, spread: 18 },
+        envelope: { attack: 0.008, decay: 0.18, sustain: 0.38, release: 0.65 },
+    });
+
+    synth.volume.value = -14;
+    synth.chain(distortion, chorus, Tone.getDestination());
     return synth;
 }
 
@@ -254,8 +268,10 @@ function createInstrument(id) {
             return createAcousticPiano();
         case "electric":
             return createElectric();
-        case "guitar":
-            return createGuitar();
+        case "acoustic-guitar":
+            return createAcousticGuitar();
+        case "electric-guitar":
+            return createElectricGuitar();
         default:
             return createAcousticPiano();
     }
@@ -267,7 +283,7 @@ export class Player {
         this.synth = null;
         this.activeNotes = [];
         this.started = false;
-        this.pianoLoaded = Tone.loaded();
+        this.pianoLoaded = null;
     }
 
     async start() {
