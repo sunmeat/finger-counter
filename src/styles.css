@@ -424,15 +424,18 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: repeat(14, minmax(0, 1fr));
-  height: clamp(96px, 14vw, 128px);
+  width: 94%;
+  justify-self: center;
+  height: clamp(88px, 12vw, 116px);
   overflow: hidden;
-  border: 1px solid var(--ebony);
-  border-radius: 6px 6px 14px 14px;
-  background: var(--ebony);
+  border: 1px solid #05090d;
+  border-radius: 8px 8px 12px 12px;
+  background: #05090d;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .key {
-  transition: background 0.08s;
+  transition: background 0.08s, transform 0.08s, box-shadow 0.08s;
 }
 
 .key.white {
@@ -441,10 +444,11 @@ body {
   min-width: 0;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 8px;
+  padding-bottom: 7px;
   border: 0;
-  border-right: 1px solid #c9c3b3;
-  background: var(--ivory);
+  border-right: 1px solid #d2ccbd;
+  border-bottom: 3px solid #c4bdae;
+  background: linear-gradient(180deg, #faf6ea 0%, var(--ivory) 78%, #ddd6c7 100%);
 }
 
 .key.black {
@@ -452,9 +456,11 @@ body {
   border: 0;
   top: 0;
   z-index: 1;
-  height: 62%;
-  border-radius: 0 0 5px 5px;
-  background: var(--ebony);
+  height: 60%;
+  border-radius: 0 0 6px 6px;
+  border-bottom: 3px solid #05090d;
+  background: linear-gradient(180deg, #18232d 0%, var(--ebony) 72%);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.28);
 }
 
 /* корень выбрала рука с нотой (жёлтый), остальные звуки аккорда добавила рука с аккордом (синий) */
@@ -487,21 +493,23 @@ body {
 }
 
 .key.white:hover {
-  background: #fffaf0;
+  background: linear-gradient(180deg, #fffdf7 0%, #f4eee1 78%, #ddd6c7 100%);
 }
 
 .key.black:hover {
-  background: #18232d;
+  background: linear-gradient(180deg, #263642 0%, #111a22 72%);
 }
 
 .key.pressed.white {
-  background: #c9a95f;
-  box-shadow: inset 0 -4px 0 rgba(16, 26, 35, 0.22);
+  background: linear-gradient(180deg, #e0c57e 0%, #c9a95f 78%, #a88b4e 100%);
+  box-shadow: inset 0 -4px 0 rgba(16, 26, 35, 0.22), inset 0 2px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(2px);
 }
 
 .key.pressed.black {
-  background: #4b5964;
-  box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #667681 0%, #46545f 78%, #303d47 100%);
+  box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.28);
+  transform: translateY(1px);
 }
 
 .key:active,
