@@ -81,6 +81,71 @@ export default function App() {
         playerRef.current.releaseKeyboardNote(midi);
     };
 
+    useEffect(() => {
+        const computerKeys = {
+            a: 69,
+            w: 70,
+            s: 71,
+            d: 72,
+            r: 73,
+            f: 74,
+            t: 75,
+            g: 76,
+            h: 77,
+            u: 78,
+            j: 79,
+            i: 80,
+        };
+
+        const pressed = new Set();
+
+        const onKeyDown = async (event) => {
+            const target = event.target;
+            if (
+                target instanceof HTMLInputElement ||
+                target instanceof HTMLTextAreaElement ||
+                target instanceof HTMLSelectElement ||
+                target?.isContentEditable
+            ) {
+                return;
+            }
+
+            const midi = computerKeys[event.key.toLowerCase()];
+            if (midi == null || pressed.has(event.key.toLowerCase())) {
+                return;
+            }
+
+            event.preventDefault();
+            pressed.add(event.key.toLowerCase());
+
+            if (!soundOn) {
+                return;
+            }
+
+            await playKeyboardNote(midi);
+        };
+
+        const onKeyUp = (event) => {
+            const key = event.key.toLowerCase();
+            const midi = computerKeys[key];
+            if (midi == null) {
+                return;
+            }
+
+            pressed.delete(key);
+            releaseKeyboardNote(midi);
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+
+        return () => {
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+            pressed.clear();
+        };
+    }, [soundOn]);
+
     useHandTracking({
         videoRef,
         canvasRef,
