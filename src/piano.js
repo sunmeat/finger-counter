@@ -1,5 +1,5 @@
 // src/piano.js
-// Ноты, аккорды и пять инструментов на Tone.js.
+// Ноты, аккорды и набор инструментов на Tone.js.
 //
 // Tone.js берёт на себя полифонию, ADSR, фильтры,
 // сэмплирование и синтез. Логика жестов при этом
@@ -126,7 +126,6 @@ export const INSTRUMENTS = [
     { id: "piano", name: "Acoustic Piano" },
     { id: "electric", name: "Electric Piano" },
     { id: "wavetable", name: "Wavetable Synth" },
-    { id: "organ", name: "Warm Organ" },
     { id: "strings", name: "String Ensemble" },
     { id: "celesta", name: "Celesta" },
     { id: "marimba", name: "Marimba" },
@@ -187,17 +186,6 @@ function createElectric() {
     return synth;
 }
 
-function createWarmOrgan() {
-    const synth = polySynth(Tone.Synth, {
-        oscillator: { type: "sine" },
-        envelope: { attack: 0.08, decay: 0.12, sustain: 0.92, release: 0.7 },
-    }, -11);
-    const chorus = new Tone.Chorus(1.2, 2.2, 0.22).start();
-    synth.disconnect();
-    synth.chain(chorus, Tone.getDestination());
-    return synth;
-}
-
 function createStringEnsemble() {
     const synth = polySynth(Tone.Synth, {
         oscillator: { type: "fatsawtooth", count: 3, spread: 16 },
@@ -243,13 +231,13 @@ function createBell() {
 }
 
 function createNylonPluck() {
-    const synth = new Tone.PolySynth(Tone.PluckSynth, {
-        attackNoise: 0.5,
-        dampening: 4800,
-        resonance: 0.9,
-    });
-    synth.volume.value = -10;
-    synth.toDestination();
+    const synth = polySynth(Tone.Synth, {
+        oscillator: { type: "triangle" },
+        envelope: { attack: 0.003, decay: 0.65, sustain: 0.08, release: 0.9 },
+    }, -12);
+    const filter = new Tone.Filter(3200, "lowpass", -12);
+    synth.disconnect();
+    synth.chain(filter, Tone.getDestination());
     return synth;
 }
 
@@ -288,8 +276,6 @@ function createInstrument(id) {
             return createAcousticPiano();
         case "electric":
             return createElectric();
-        case "organ":
-            return createWarmOrgan();
         case "strings":
             return createStringEnsemble();
         case "celesta":
