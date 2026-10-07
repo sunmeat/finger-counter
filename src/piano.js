@@ -1,68 +1,522 @@
-// src/piano.js — ноты, аккорды и синтезатор инструментов (рояль, гитара) на Web Audio API, без библиотек.
+// src/piano.js — ноты, аккорды и синтезатор инструментов
+// (рояль, гитара) на Web Audio API, без библиотек.
 //
-// Какая рука задаёт ноту, а какая аккорд, решает App.jsx (зависит от переключателя «Правша / Левша»):
+// Какая рука задаёт ноту, а какая аккорд, решает App.jsx
+// (зависит от переключателя «Правша / Левша»):
 //  - правша: левая рука — основная нота, правая — тип аккорда;
 //  - левша: наоборот.
-// Здесь рука не важна: planSound() получает пальцы «руки с нотой» и «руки с аккордом».
+//
+// Здесь рука не важна:
+// planSound() получает пальцы «руки с нотой»
+// и «руки с аккордом».
 
-// ---------- Что играет какой палец ----------
+// ---------- Ноты ----------
 
-// Нота задаётся MIDI-номером: 60 = до первой октавы (C4), 69 = ля (A4).
-// Рука с нотой: [большой, указательный, средний, безымянный, мизинец]
-export const ROOT_MIDI = [
-    60, // большой     — до
-    57, // указательный — ля (малая октава, чтобы не скакать вверх)
-    64, // средний     — ми
-    65, // безымянный  — фа
-    67, // мизинец     — соль
+export const NOTE_NAMES = [
+    "до",
+    "до♯",
+    "ре",
+    "ре♯",
+    "ми",
+    "фа",
+    "фа♯",
+    "соль",
+    "соль♯",
+    "ля",
+    "ля♯",
+    "си",
 ];
 
-// Рука с аккордом. Интервалы — в полутонах от основной ноты.
-export const CHORD_TYPES = [
-    { name: "мажор", intervals: [0, 4, 7] }, // большой
-    { name: "минор", intervals: [0, 3, 7] }, // указательный
-    { name: "Major 7", intervals: [0, 4, 7, 11] }, // безымянный
-    { name: "Minor 7", intervals: [0, 3, 7, 10] }, // мизинец
-    { name: "септаккорд (7)", intervals: [0, 4, 7, 10] }, // средний
-];
-const SINGLE_NOTE = { name: "", intervals: [0] }; // на руке с аккордом нет поднятых пальцев
-
-export const NOTE_NAMES = ["до", "до♯", "ре", "ре♯", "ми", "фа", "фа♯", "соль", "соль♯", "ля", "ля♯", "си"];
-
-/**
- * По поднятым пальцам обеих рук решает, что играть.
- * noteFingers  — пальцы руки, которая задаёт основные ноты,
- * chordFingers — пальцы руки, которая выбирает тип аккорда.
- * Оба — массивы boolean из countFingers() или undefined, если руки нет в кадре.
- * Правила:
- *  - руки с нотой нет или на ней нет поднятых пальцев → тишина;
- *  - каждый поднятый палец руки с нотой даёт свою основную ноту;
- *  - если на руке с аккордом поднято несколько пальцев, берётся первый по порядку (большой → мизинец);
- *  - на руке с аккордом нет поднятых пальцев (или её нет в кадре) → играет одна нота без аккорда.
- * Возвращает { key, midi, roots, label }:
- *  - midi — все звучащие ноты, roots — только основные (их выбрала рука с нотой);
- *  - key одинаков, пока звучание то же самое — по нему мы понимаем, что пора играть заново.
+/*
+ * Нумерация пальцев:
+ *
+ * 1 = большой
+ * 2 = указательный
+ * 3 = средний
+ * 4 = безымянный
+ * 5 = мизинец
+ *
+ * Порядок массива fingers:
+ *
+ * [большой, указательный, средний, безымянный, мизинец]
+ *
+ * mask:
+ *
+ * 10000 = только 1
+ * 11000 = 1 + 2
+ * 11100 = 1 + 2 + 3
+ * и т. д.
+ *
+ * ВАЖНО:
+ * каждая комбинация является точным соответствием одной ноте.
+ *
+ * Если комбинации нет в таблице,
+ * ничего не играется.
+ *
+ * MIDI:
+ * C4 = 60
+ * D4 = 62
+ * E4 = 64
+ * F4 = 65
+ * G4 = 67
+ * A4 = 69
+ * B4 = 71
+ * C5 = 72
  */
-export function planSound(noteFingers, chordFingers) {
-    const roots = (noteFingers ?? []).flatMap((up, i) => (up ? [ROOT_MIDI[i]] : []));
-    if (roots.length === 0) return { key: "", midi: [], roots: [], label: "" };
+export const NOTE_COMBINATIONS = [
+    // Натуральные ноты
 
-    const chordIdx = (chordFingers ?? []).indexOf(true);
-    const type = chordIdx === -1 ? SINGLE_NOTE : CHORD_TYPES[chordIdx];
+    {
+        mask: "10000",
+        fingers: [1],
+        name: "до",
+        midi: 60,
+    },
 
-    const midi = [...new Set(roots.flatMap((r) => type.intervals.map((iv) => r + iv)))].sort((a, b) => a - b);
-    const rootNames = roots.map((m) => NOTE_NAMES[m % 12]).join(" + ");
-    return { key: midi.join(","), midi, roots, label: `${rootNames} ${type.name}`.trim() };
+    {
+        mask: "11000",
+        fingers: [1, 2],
+        name: "ре",
+        midi: 62,
+    },
+
+    {
+        mask: "11100",
+        fingers: [1, 2, 3],
+        name: "ми",
+        midi: 64,
+    },
+
+    {
+        mask: "11110",
+        fingers: [1, 2, 3, 4],
+        name: "фа",
+        midi: 65,
+    },
+
+    {
+        mask: "11111",
+        fingers: [1, 2, 3, 4, 5],
+        name: "соль",
+        midi: 67,
+    },
+
+    {
+        mask: "01000",
+        fingers: [2],
+        name: "ля",
+        midi: 69,
+    },
+
+    {
+        mask: "01100",
+        fingers: [2, 3],
+        name: "си",
+        midi: 71,
+    },
+
+    {
+        mask: "01110",
+        fingers: [2, 3, 4],
+        name: "до",
+        midi: 72,
+    },
+
+    // Диезы
+
+    {
+        mask: "10001",
+        fingers: [1, 5],
+        name: "до♯",
+        midi: 61,
+    },
+
+    {
+        mask: "11001",
+        fingers: [1, 2, 5],
+        name: "ре♯",
+        midi: 63,
+    },
+
+    {
+        mask: "11101",
+        fingers: [1, 2, 3, 5],
+        name: "фа♯",
+        midi: 66,
+    },
+
+    {
+        mask: "01111",
+        fingers: [2, 3, 4, 5],
+        name: "соль♯",
+        midi: 68,
+    },
+
+    {
+        mask: "01001",
+        fingers: [2, 5],
+        name: "ля♯",
+        midi: 70,
+    },
+];
+
+/*
+ * Алиас оставляем для интерфейса и возможного
+ * использования в других файлах проекта.
+ *
+ * Теперь это не пять нот по пяти пальцам,
+ * а полноценная таблица комбинаций.
+ */
+export const LEFT_HAND_NOTES = NOTE_COMBINATIONS;
+
+/*
+ * Оставляем ROOT_MIDI для совместимости
+ * со старым кодом.
+ *
+ * В новом App.jsx этот массив уже не используется,
+ * потому что одна нота определяется комбинацией пальцев,
+ * а не отдельным пальцем.
+ */
+export const ROOT_MIDI = NOTE_COMBINATIONS.map(
+    ({ midi }) => midi
+);
+
+const NOTE_MAP = new Map(
+    NOTE_COMBINATIONS.map(
+        (note) => [note.mask, note]
+    )
+);
+
+// ---------- Аккорды ----------
+
+/*
+ * Рука с аккордом.
+ *
+ * Теперь аккорд определяется НЕ первым поднятым пальцем,
+ * а точной комбинацией пальцев.
+ *
+ * 1             = мажор
+ * 1 + 2         = минор
+ * 1 + 2 + 3     = Major 7
+ * 1 + 2 + 3 + 4 = Minor 7
+ * и т. д.
+ *
+ * fingers:
+ *   номера поднятых пальцев.
+ *
+ * mask:
+ *   двоичное представление комбинации.
+ *
+ * intervals:
+ *   интервалы в полутонах относительно основной ноты.
+ */
+export const CHORD_GESTURES = [
+    {
+        fingers: [],
+        mask: 0,
+        name: "одна нота",
+        intervals: [0],
+    },
+
+    {
+        fingers: [1],
+        mask: 1,
+        name: "мажор",
+        intervals: [0, 4, 7],
+    },
+
+    {
+        fingers: [1, 2],
+        mask: 3,
+        name: "минор",
+        intervals: [0, 3, 7],
+    },
+
+    {
+        fingers: [1, 2, 3],
+        mask: 7,
+        name: "Major 7",
+        intervals: [0, 4, 7, 11],
+    },
+
+    {
+        fingers: [1, 2, 3, 4],
+        mask: 15,
+        name: "Minor 7",
+        intervals: [0, 3, 7, 10],
+    },
+
+    {
+        fingers: [1, 2, 5],
+        mask: 19,
+        name: "7",
+        intervals: [0, 4, 7, 10],
+    },
+
+    {
+        fingers: [1, 5],
+        mask: 17,
+        name: "sus4",
+        intervals: [0, 5, 7],
+    },
+
+    {
+        fingers: [2, 5],
+        mask: 18,
+        name: "sus2",
+        intervals: [0, 2, 7],
+    },
+
+    {
+        fingers: [1, 3],
+        mask: 5,
+        name: "diminished",
+        intervals: [0, 3, 6],
+    },
+
+    {
+        fingers: [1, 2, 4],
+        mask: 11,
+        name: "augmented",
+        intervals: [0, 4, 8],
+    },
+
+    {
+        fingers: [2, 3],
+        mask: 6,
+        name: "6",
+        intervals: [0, 4, 7, 9],
+    },
+
+    {
+        fingers: [2, 4],
+        mask: 10,
+        name: "m6",
+        intervals: [0, 3, 7, 9],
+    },
+
+    {
+        fingers: [1, 3, 5],
+        mask: 21,
+        name: "m7",
+        intervals: [0, 3, 7, 10],
+    },
+
+    {
+        fingers: [1, 3, 4],
+        mask: 13,
+        name: "7sus4",
+        intervals: [0, 5, 7, 10],
+    },
+
+    {
+        fingers: [2, 3, 5],
+        mask: 22,
+        name: "m7♭5",
+        intervals: [0, 3, 6, 10],
+    },
+
+    {
+        fingers: [1, 2, 3, 5],
+        mask: 23,
+        name: "9",
+        intervals: [0, 4, 7, 10, 14],
+    },
+
+    {
+        fingers: [1, 2, 4, 5],
+        mask: 27,
+        name: "m9",
+        intervals: [0, 3, 7, 10, 14],
+    },
+
+    {
+        fingers: [1, 3, 4, 5],
+        mask: 29,
+        name: "7♯9",
+        intervals: [0, 4, 7, 10, 15],
+    },
+
+    {
+        fingers: [2, 3, 4, 5],
+        mask: 30,
+        name: "6/9",
+        intervals: [0, 4, 7, 9, 14],
+    },
+
+    {
+        fingers: [1, 2, 3, 4, 5],
+        mask: 31,
+        name: "13",
+        intervals: [0, 4, 7, 10, 14, 21],
+    },
+];
+
+const CHORD_MAP = new Map(
+    CHORD_GESTURES.map(
+        (chord) => [chord.mask, chord]
+    )
+);
+
+// ---------- Вспомогательные функции ----------
+
+function fingersToMask(fingers) {
+    return (fingers ?? [])
+        .map(Boolean)
+        .map(Number)
+        .join("");
+}
+
+function fingersToChordMask(fingers) {
+    return (fingers ?? []).reduce(
+        (mask, isUp, index) =>
+            mask |
+            (isUp
+                ? 1 << index
+                : 0),
+        0
+    );
+}
+
+export function getNoteByFingers(fingers) {
+    const mask = fingersToMask(fingers);
+
+    return NOTE_MAP.get(mask) ?? null;
+}
+
+export function chordFromFingers(fingers) {
+    const mask =
+        fingersToChordMask(
+            fingers
+        );
+
+    return (
+        CHORD_MAP.get(mask) ??
+        null
+    );
+}
+
+/*
+ * По поднятым пальцам обеих рук решает, что играть.
+ *
+ * noteFingers:
+ *   пальцы руки, которая задаёт основную ноту.
+ *
+ * chordFingers:
+ *   пальцы руки, которая выбирает аккорд.
+ *
+ * Правила:
+ *
+ * 1. Комбинация руки с нотой должна точно присутствовать
+ *    в NOTE_COMBINATIONS.
+ *
+ * 2. Если комбинации нет, играется тишина.
+ *
+ * 3. Если комбинация существует,
+ *    она соответствует ровно одной основной ноте.
+ *
+ * 4. На руке с аккордом используется точная комбинация
+ *    из CHORD_GESTURES.
+ *
+ * 5. Если на руке с аккордом нет поднятых пальцев,
+ *    играется только основная нота.
+ *
+ * Возвращает:
+ *
+ * {
+ *   key,
+ *   midi,
+ *   roots,
+ *   label
+ * }
+ */
+export function planSound(
+    noteFingers,
+    chordFingers
+) {
+    const note =
+        getNoteByFingers(
+            noteFingers
+        );
+
+    /*
+     * Нет допустимой комбинации:
+     * ничего не играем.
+     */
+    if (!note) {
+        return {
+            key: "",
+            midi: [],
+            roots: [],
+            label: "",
+        };
+    }
+
+    /*
+     * Получаем точную комбинацию
+     * пальцев руки с аккордом.
+     */
+    const chord =
+        chordFromFingers(
+            chordFingers
+        );
+
+    /*
+     * Если комбинация неизвестна,
+     * ничего не играем.
+     *
+     * Это важно: теперь случайная комбинация
+     * пальцев не превращается автоматически
+     * в какой-либо аккорд.
+     */
+    if (!chord) {
+        return {
+            key: "",
+            midi: [],
+            roots: [],
+            label: "",
+        };
+    }
+
+    /*
+     * Строим MIDI-ноты.
+     */
+    const midi = [
+        ...new Set(
+            chord.intervals.map(
+                (interval) =>
+                    note.midi +
+                    interval
+            )
+        ),
+    ].sort(
+        (a, b) => a - b
+    );
+
+    return {
+        key: midi.join(","),
+        midi,
+        roots: [note.midi],
+        label:
+            `${note.name} ${chord.name}`.trim(),
+    };
 }
 
 // ---------- Инструменты ----------
 
 export const INSTRUMENTS = [
-    { id: "piano", name: "Рояль" },
-    { id: "guitar", name: "Гитара" },
+    {
+        id: "piano",
+        name: "Рояль",
+    },
+
+    {
+        id: "guitar",
+        name: "Гитара",
+    },
 ];
 
-// Рояль: обертоны [номер гармоники, громкость]. Верхние затухают быстрее — звук «щипка».
+// Рояль: обертоны [номер гармоники, громкость].
 const PARTIALS = [
     [1, 1],
     [2, 0.45],
@@ -71,9 +525,9 @@ const PARTIALS = [
     [5, 0.06],
 ];
 
-const GUITAR_OCTAVE_SHIFT = -12; // гитара звучит на октаву ниже, чем рояль
-const GUITAR_STRUM_DELAY = 0.03; // пауза между струнами при «бое», секунды
-const GUITAR_NOTE_SECONDS = 3.5; // длина буфера со звуком одной струны
+const GUITAR_OCTAVE_SHIFT = -12;
+const GUITAR_STRUM_DELAY = 0.03;
+const GUITAR_NOTE_SECONDS = 3.5;
 
 export class Player {
     constructor() {
@@ -81,127 +535,370 @@ export class Player {
         this.master = null;
         this.voices = [];
         this.instrument = "piano";
-        this.pluckCache = new Map(); // midi → AudioBuffer с готовой струной
+        this.pluckCache = new Map();
     }
 
-    /** Вызывать из обработчика клика: браузеры не дают играть звук без действия пользователя. */
+    /*
+     * Вызывается из обработчика клика.
+     *
+     * Браузеры не разрешают воспроизводить звук
+     * без пользовательского действия.
+     */
     async start() {
         if (!this.ctx) {
-            const AC = window.AudioContext || window.webkitAudioContext;
+            const AC =
+                window.AudioContext ||
+                window.webkitAudioContext;
+
             this.ctx = new AC();
-            this.master = this.ctx.createGain();
+
+            this.master =
+                this.ctx.createGain();
+
             this.master.gain.value = 0.35;
-            const limiter = this.ctx.createDynamicsCompressor(); // чтобы аккорды не клиппили
-            this.master.connect(limiter).connect(this.ctx.destination);
+
+            const limiter =
+                this.ctx.createDynamicsCompressor();
+
+            this.master
+                .connect(limiter)
+                .connect(
+                    this.ctx.destination
+                );
         }
+
         await this.ctx.resume();
     }
 
     get ready() {
-        return this.ctx?.state === "running";
+        return (
+            this.ctx?.state === "running"
+        );
     }
 
     setInstrument(id) {
-        if (id === this.instrument) return;
+        if (id === this.instrument) {
+            return;
+        }
+
         this.releaseAll();
+
         this.instrument = id;
     }
 
-    /** Играет все ноты (midiNotes — отсортированный массив MIDI-номеров) выбранным инструментом. */
+    /*
+     * Играет все ноты выбранным инструментом.
+     */
     playNotes(midiNotes) {
-        if (!this.ready || midiNotes.length === 0) return;
-        const t = this.ctx.currentTime;
-        // чтобы аккорд из 4 нот не был в 4 раза громче одиночной
-        const level = 1 / Math.sqrt(midiNotes.length);
+        if (
+            !this.ready ||
+            midiNotes.length === 0
+        ) {
+            return;
+        }
 
-        if (this.instrument === "guitar") {
-            // «бой»: струны берутся снизу вверх с небольшой задержкой
-            midiNotes.forEach((m, i) => {
-                this.voices.push(this.#pluck(m + GUITAR_OCTAVE_SHIFT, t + i * GUITAR_STRUM_DELAY, level));
-            });
+        const t =
+            this.ctx.currentTime;
+
+        /*
+         * Чтобы аккорд из нескольких нот
+         * не был в несколько раз громче
+         * одиночной ноты.
+         */
+        const level =
+            1 /
+            Math.sqrt(
+                midiNotes.length
+            );
+
+        if (
+            this.instrument === "guitar"
+        ) {
+            /*
+             * Небольшая задержка между струнами
+             * создаёт эффект боя.
+             */
+            midiNotes.forEach(
+                (m, i) => {
+                    this.voices.push(
+                        this.#pluck(
+                            m +
+                            GUITAR_OCTAVE_SHIFT,
+                            t +
+                            i *
+                            GUITAR_STRUM_DELAY,
+                            level
+                        )
+                    );
+                }
+            );
         } else {
-            for (const m of midiNotes) this.voices.push(this.#pianoVoice(m, t, level));
+            for (
+                const m of midiNotes
+                ) {
+                this.voices.push(
+                    this.#pianoVoice(
+                        m,
+                        t,
+                        level
+                    )
+                );
+            }
         }
     }
 
-    /** Быстро приглушает всё, что сейчас звучит (и ещё не начавшиеся ноты «боя»). */
+    /*
+     * Быстро приглушает всё,
+     * что сейчас звучит.
+     */
     releaseAll() {
-        if (!this.ready) return;
-        const now = this.ctx.currentTime;
-        for (const v of this.voices) {
-            v.gain.gain.cancelScheduledValues(now);
-            v.gain.gain.setTargetAtTime(0, now, 0.05);
+        if (!this.ready) {
+            return;
         }
+
+        const now =
+            this.ctx.currentTime;
+
+        for (
+            const v of this.voices
+            ) {
+            v.gain.gain.cancelScheduledValues(
+                now
+            );
+
+            v.gain.gain.setTargetAtTime(
+                0,
+                now,
+                0.05
+            );
+        }
+
         this.voices = [];
     }
 
-    // --- рояль: сумма синусоид с быстрой атакой и затуханием ---
-    #pianoVoice(midi, t, level) {
+    // ---------- Рояль ----------
+
+    #pianoVoice(
+        midi,
+        t,
+        level
+    ) {
         const ctx = this.ctx;
-        const freq = 440 * 2 ** ((midi - 69) / 12);
 
-        const voiceGain = ctx.createGain(); // общий регулятор ноты — им делаем release
-        voiceGain.connect(this.master);
+        const freq =
+            440 *
+            2 **
+            ((midi - 69) /
+                12);
 
-        for (const [n, amp] of PARTIALS) {
-            const osc = ctx.createOscillator();
+        const voiceGain =
+            ctx.createGain();
+
+        voiceGain.connect(
+            this.master
+        );
+
+        for (
+            const [n, amp]
+            of PARTIALS
+            ) {
+            const osc =
+                ctx.createOscillator();
+
             osc.type = "sine";
-            osc.frequency.value = freq * n;
 
-            const g = ctx.createGain();
-            g.gain.setValueAtTime(0, t);
-            g.gain.linearRampToValueAtTime(amp * level, t + 0.005); // атака — удар молоточка
-            g.gain.setTargetAtTime(0, t + 0.005, 1.2 / n); // естественное затухание
+            osc.frequency.value =
+                freq * n;
 
-            osc.connect(g).connect(voiceGain);
+            const gain =
+                ctx.createGain();
+
+            gain.gain.setValueAtTime(
+                0,
+                t
+            );
+
+            gain.gain.linearRampToValueAtTime(
+                amp * level,
+                t + 0.005
+            );
+
+            gain.gain.setTargetAtTime(
+                0,
+                t + 0.005,
+                1.2 / n
+            );
+
+            osc
+                .connect(gain)
+                .connect(voiceGain);
+
             osc.start(t);
-            osc.stop(t + 7);
+
+            osc.stop(
+                t + 7
+            );
         }
-        return { gain: voiceGain };
+
+        return {
+            gain: voiceGain,
+        };
     }
 
-    // --- гитара: щипковая струна по алгоритму Карплюса — Стронга ---
-    #pluck(midi, t, level) {
-        const ctx = this.ctx;
-        const src = ctx.createBufferSource();
-        src.buffer = this.#pluckBuffer(midi);
+    // ---------- Гитара ----------
 
-        const voiceGain = ctx.createGain();
-        voiceGain.gain.value = level * 0.9;
-        src.connect(voiceGain).connect(this.master);
+    #pluck(
+        midi,
+        t,
+        level
+    ) {
+        const ctx = this.ctx;
+
+        const src =
+            ctx.createBufferSource();
+
+        src.buffer =
+            this.#pluckBuffer(
+                midi
+            );
+
+        const voiceGain =
+            ctx.createGain();
+
+        voiceGain.gain.value =
+            level * 0.9;
+
+        src
+            .connect(voiceGain)
+            .connect(this.master);
+
         src.start(t);
-        return { gain: voiceGain };
+
+        return {
+            gain: voiceGain,
+        };
     }
 
     #pluckBuffer(midi) {
-        const cached = this.pluckCache.get(midi);
-        if (cached) return cached;
+        const cached =
+            this.pluckCache.get(
+                midi
+            );
 
-        const sr = this.ctx.sampleRate;
-        const freq = 440 * 2 ** ((midi - 69) / 12);
-        const period = Math.round(sr / freq); // длина «струны» в сэмплах
-        const length = Math.floor(sr * GUITAR_NOTE_SECONDS);
-        const buffer = this.ctx.createBuffer(1, length, sr);
-        const data = buffer.getChannelData(0);
+        if (cached) {
+            return cached;
+        }
 
-        // щипок: шум, слегка сглаженный, чтобы звук был теплее
+        const sr =
+            this.ctx.sampleRate;
+
+        const freq =
+            440 *
+            2 **
+            ((midi - 69) /
+                12);
+
+        const period =
+            Math.round(
+                sr / freq
+            );
+
+        const length =
+            Math.floor(
+                sr *
+                GUITAR_NOTE_SECONDS
+            );
+
+        const buffer =
+            this.ctx.createBuffer(
+                1,
+                length,
+                sr
+            );
+
+        const data =
+            buffer.getChannelData(
+                0
+            );
+
         let prev = 0;
-        for (let i = 0; i <= period; i++) {
-            prev = 0.6 * prev + 0.4 * (Math.random() * 2 - 1);
+
+        /*
+         * Щипок струны.
+         */
+        for (
+            let i = 0;
+            i <= period;
+            i++
+        ) {
+            prev =
+                0.6 * prev +
+                0.4 *
+                (Math.random() *
+                    2 -
+                    1);
+
             data[i] = prev;
         }
-        // струна: каждый проход усредняет два соседних значения — верха уходят быстрее низов
+
+        /*
+         * Алгоритм Карплюса–Стронга.
+         */
         const decay = 0.997;
-        for (let i = period + 1; i < length; i++) {
-            data[i] = decay * 0.5 * (data[i - period] + data[i - period - 1]);
+
+        for (
+            let i = period + 1;
+            i < length;
+            i++
+        ) {
+            data[i] =
+                decay *
+                0.5 *
+                (data[
+                    i - period
+                        ] +
+                    data[
+                    i -
+                    period -
+                    1
+                        ]);
         }
 
-        // нормализуем громкость, чтобы все струны звучали примерно одинаково
+        /*
+         * Нормализация громкости.
+         */
         let peak = 0;
-        for (let i = 0; i < length; i++) peak = Math.max(peak, Math.abs(data[i]));
-        if (peak > 0) for (let i = 0; i < length; i++) data[i] /= peak;
 
-        this.pluckCache.set(midi, buffer);
+        for (
+            let i = 0;
+            i < length;
+            i++
+        ) {
+            peak =
+                Math.max(
+                    peak,
+                    Math.abs(
+                        data[i]
+                    )
+                );
+        }
+
+        if (peak > 0) {
+            for (
+                let i = 0;
+                i < length;
+                i++
+            ) {
+                data[i] /=
+                    peak;
+            }
+        }
+
+        this.pluckCache.set(
+            midi,
+            buffer
+        );
+
         return buffer;
     }
 }
