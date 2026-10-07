@@ -3,6 +3,7 @@ import { HANDEDNESS, LEFT_HAND_NOTES } from "../constants.js";
 import { rolesFor } from "../handRoles.js";
 import Keyboard from "./Keyboard.jsx";
 import Segmented from "./Segmented.jsx";
+import InstrumentSelect from "./InstrumentSelect.jsx";
 import HandPanel from "./HandPanel.jsx";
 
 function maskFromFingers(fingers) {
@@ -74,8 +75,7 @@ export default function PianoScreen({
                 </div>
 
                 <div className="toolbar">
-                    <Segmented
-                        label="Инструмент"
+                    <InstrumentSelect
                         options={INSTRUMENTS}
                         value={instrument}
                         onChange={onPickInstrument}
