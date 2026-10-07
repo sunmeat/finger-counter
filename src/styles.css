@@ -427,6 +427,36 @@ body {
   color: var(--ink);
 }
 
+/* ---------- Интерактивная клавиатура ---------- */
+
+.key {
+  appearance: none;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.key.white:hover {
+  background: #fffaf0;
+}
+
+.key.black:hover {
+  background: #18232d;
+}
+
+.key:active,
+.key:focus-visible {
+  outline: none;
+}
+
+.key.white:active {
+  background: #ddd6c7;
+}
+
+.key.black:active {
+  background: #263744;
+}
+
 /* ---------- Боковые панели ---------- */
 
 .panel {
