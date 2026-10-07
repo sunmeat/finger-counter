@@ -141,7 +141,6 @@ export const INSTRUMENTS = [
     { id: "digital-piano", name: "Digital Piano" },
     { id: "clavinet", name: "Clavinet" },
     { id: "deep-bass", name: "Deep Bass" },
-    { id: "dream-pad", name: "Dream Pad" },
 ];
 
 const PIANO_BASE_URL = "https://tonejs.github.io/audio/salamander/";
@@ -151,12 +150,14 @@ function midiToNote(midi) {
 }
 
 function polySynth(voice, options, volume = -8) {
-    const synth = new Tone.PolySynth(voice, options);
+    const synth = new Tone.PolySynth(voice, {
+        maxPolyphony: 12,
+        ...options,
+    });
     synth.volume.value = volume;
     synth.toDestination();
     return synth;
 }
-
 
 function createWavetable() {
     const filter = new Tone.Filter(2800, "lowpass", -12);
@@ -239,14 +240,21 @@ function createNylonPluck() {
 }
 
 function createAccordion() {
-    const synth = polySynth(Tone.Synth, {
-        oscillator: { type: "custom", partials: [1, 0.72, 0.52, 0.3, 0.18, 0.09] },
-        envelope: { attack: 0.04, decay: 0.18, sustain: 0.9, release: 0.35 },
-    }, -14);
-    const filter = new Tone.Filter(3600, "lowpass", -12);
-    const tremolo = new Tone.Tremolo(4.7, 0.12).start();
+    const synth = polySynth(Tone.FMSynth, {
+        harmonicity: 1,
+        modulationIndex: 2.6,
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.025, decay: 0.18, sustain: 0.88, release: 0.45 },
+        modulation: { type: "square" },
+        modulationEnvelope: { attack: 0.01, decay: 0.16, sustain: 0.55, release: 0.3 },
+    }, -15);
+
+    const filter = new Tone.Filter(4800, "lowpass", -12);
+    const chorus = new Tone.Chorus(1.8, 2.8, 0.32).start();
+    const tremolo = new Tone.Tremolo(5.3, 0.16).start();
+
     synth.disconnect();
-    synth.chain(filter, tremolo, Tone.getDestination());
+    synth.chain(filter, chorus, tremolo, Tone.getDestination());
     return synth;
 }
 
@@ -328,13 +336,6 @@ function createDeepBass() {
     }, -13);
 }
 
-function createDreamPad() {
-    return polySynth(Tone.Synth, {
-        oscillator: { type: "fatsine", count: 5, spread: 28 },
-        envelope: { attack: 1.1, decay: 0.8, sustain: 0.9, release: 3.8 },
-    }, -19);
-}
-
 function createInstrument(id) {
     switch (id) {
         case "wavetable":
@@ -373,8 +374,6 @@ function createInstrument(id) {
             return createClavinet();
         case "deep-bass":
             return createDeepBass();
-        case "dream-pad":
-            return createDreamPad();
         default:
             return createAcousticPiano();
     }
@@ -386,8 +385,8 @@ export class Player {
         this.synth = null;
         this.synths = new Map();
         this.activeNotes = [];
+        this.keyboardNotes = new Set();
         this.started = false;
-        this.pianoLoaded = null;
     }
 
     async start() {
@@ -411,6 +410,7 @@ export class Player {
         }
 
         this.releaseAll();
+        this.releaseKeyboardNotes();
 
         this.instrument = id;
         this.synth = this.started ? this.#ensureInstrument(id) : null;
@@ -451,17 +451,34 @@ export class Player {
             this.synth = this.#ensureInstrument(this.instrument);
         }
 
-        const note = midiToNote(midi);
-        const velocity = 0.7;
-        this.synth.triggerAttack(note, undefined, velocity);
-    }
-
-    releaseKeyboardNote(midi) {
-        if (!this.ready || !this.synth) {
+        if (this.keyboardNotes.has(midi)) {
             return;
         }
 
+        this.keyboardNotes.add(midi);
+        this.synth.triggerAttack(midiToNote(midi), undefined, 0.7);
+    }
+
+    releaseKeyboardNote(midi) {
+        if (!this.ready || !this.synth || !this.keyboardNotes.has(midi)) {
+            return;
+        }
+
+        this.keyboardNotes.delete(midi);
         this.synth.triggerRelease(midiToNote(midi), undefined);
+    }
+
+    releaseKeyboardNotes() {
+        if (!this.synth || !this.ready || !this.keyboardNotes.size) {
+            this.keyboardNotes.clear();
+            return;
+        }
+
+        this.synth.triggerRelease(
+            [...this.keyboardNotes].map(midiToNote),
+            undefined
+        );
+        this.keyboardNotes.clear();
     }
 
     releaseAll() {
