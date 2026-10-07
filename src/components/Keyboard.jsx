@@ -12,7 +12,7 @@ const BLACK_KEYS = ALL_KEYS
         left: ((WHITE_KEYS.indexOf(m - 1) + 1) / WHITE_KEYS.length) * 100 - BLACK_WIDTH / 2,
     }));
 
-export default function Keyboard({ midi, roots }) {
+export default function Keyboard({ midi, roots, onPlayNote }) {
     const sounding = new Set(midi);
     const rootSet = new Set(roots);
 
@@ -24,16 +24,25 @@ export default function Keyboard({ midi, roots }) {
     return (
         <div className="keys" role="img" aria-label={midi.length ? `Нажаты клавиши: ${names}` : "Клавиши не нажаты"}>
             {WHITE_KEYS.map((m) => (
-                <div key={m} className={keyClass(m, "white")}>
+                <button
+                    key={m}
+                    type="button"
+                    className={keyClass(m, "white")}
+                    onPointerDown={() => onPlayNote?.(m)}
+                    aria-label={"Нота " + NOTE_NAMES[m % 12]}
+                >
                     {m % 12 === 0 && <span className="key-c">до</span>}
-                </div>
+                </button>
             ))}
 
             {BLACK_KEYS.map(({ m, left }) => (
-                <div
+                <button
                     key={m}
+                    type="button"
                     className={keyClass(m, "black")}
-                    style={{ left: `${left}%`, width: `${BLACK_WIDTH}%` }}
+                    style={{ left: left + "%", width: BLACK_WIDTH + "%" }}
+                    onPointerDown={() => onPlayNote?.(m)}
+                    aria-label={"Нота " + NOTE_NAMES[m % 12]}
                 />
             ))}
         </div>
