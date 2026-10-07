@@ -123,10 +123,17 @@ export function planSound(noteFingers, chordFingers) {
 // ---------- Инструменты ----------
 
 export const INSTRUMENTS = [
-    { id: "subtractive", name: "Субтрактивный полифонический синтезатор" },
-    { id: "wavetable", name: "Wavetable Synth" },
     { id: "piano", name: "Acoustic Piano" },
-    { id: "electric", name: "Electric Piano / Organ" },
+    { id: "electric", name: "Electric Piano" },
+    { id: "wavetable", name: "Wavetable Synth" },
+    { id: "organ", name: "Warm Organ" },
+    { id: "strings", name: "String Ensemble" },
+    { id: "celesta", name: "Celesta" },
+    { id: "marimba", name: "Marimba" },
+    { id: "bell", name: "Bell" },
+    { id: "nylon", name: "Nylon Pluck" },
+    { id: "accordion", name: "Accordion" },
+    { id: "vibraphone", name: "Vibraphone" },
 ];
 
 const PIANO_BASE_URL = "https://tonejs.github.io/audio/salamander/";
@@ -142,104 +149,161 @@ function polySynth(voice, options, volume = -8) {
     return synth;
 }
 
-function createSubtractive() {
-    const filter = new Tone.Filter(1800, "lowpass", -12);
-    const synth = polySynth(Tone.Synth, {
-        oscillator: {
-            type: "sawtooth",
-        },
-        envelope: {
-            attack: 0.015,
-            decay: 0.18,
-            sustain: 0.48,
-            release: 0.55,
-        },
-    }, -10);
-
-    synth.disconnect();
-    synth.connect(filter);
-    filter.toDestination();
-
-    return synth;
-}
 
 function createWavetable() {
-    const filter = new Tone.Filter(2600, "lowpass", -12);
+    const filter = new Tone.Filter(2800, "lowpass", -12);
     const synth = polySynth(Tone.Synth, {
-        oscillator: {
-            type: "custom",
-            partials: [1, 0.62, 0.32, 0.18, 0.08, 0.035],
-        },
-        envelope: {
-            attack: 0.01,
-            decay: 0.22,
-            sustain: 0.62,
-            release: 0.7,
-        },
+        oscillator: { type: "custom", partials: [1, 0.62, 0.32, 0.18, 0.08, 0.035] },
+        envelope: { attack: 0.015, decay: 0.3, sustain: 0.78, release: 1.3 },
     }, -12);
-
     synth.disconnect();
     synth.connect(filter);
     filter.toDestination();
-
     return synth;
 }
 
 function createAcousticPiano() {
     return new Tone.Sampler({
         urls: {
-            C1: "C1.mp3",
-            A1: "A1.mp3",
-            C2: "C2.mp3",
-            A2: "A2.mp3",
-            C3: "C3.mp3",
-            A3: "A3.mp3",
-            C4: "C4.mp3",
-            A4: "A4.mp3",
-            C5: "C5.mp3",
-            A5: "A5.mp3",
-            C6: "C6.mp3",
-            A6: "A6.mp3",
-            C7: "C7.mp3",
+            C1: "C1.mp3", A1: "A1.mp3", C2: "C2.mp3", A2: "A2.mp3",
+            C3: "C3.mp3", A3: "A3.mp3", C4: "C4.mp3", A4: "A4.mp3",
+            C5: "C5.mp3", A5: "A5.mp3", C6: "C6.mp3", A6: "A6.mp3", C7: "C7.mp3",
         },
         baseUrl: PIANO_BASE_URL,
-        release: 1.6,
+        release: 2.2,
         volume: -6,
     }).toDestination();
 }
 
 function createElectric() {
     const synth = polySynth(Tone.Synth, {
-        oscillator: {
-            type: "sine",
-        },
-        envelope: {
-            attack: 0.015,
-            decay: 0.25,
-            sustain: 0.55,
-            release: 0.8,
-        },
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.02, decay: 0.3, sustain: 0.72, release: 1.15 },
     }, -9);
-
     const tremolo = new Tone.Tremolo(5.2, 0.18).start();
     const chorus = new Tone.Chorus(2.2, 2.5, 0.25).start();
-
     synth.disconnect();
     synth.chain(tremolo, chorus, Tone.getDestination());
+    return synth;
+}
 
+function createWarmOrgan() {
+    const synth = polySynth(Tone.Synth, {
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.08, decay: 0.12, sustain: 0.92, release: 0.7 },
+    }, -11);
+    const chorus = new Tone.Chorus(1.2, 2.2, 0.22).start();
+    synth.disconnect();
+    synth.chain(chorus, Tone.getDestination());
+    return synth;
+}
+
+function createStringEnsemble() {
+    const synth = polySynth(Tone.Synth, {
+        oscillator: { type: "fatsawtooth", count: 3, spread: 16 },
+        envelope: { attack: 0.32, decay: 0.4, sustain: 0.78, release: 1.8 },
+    }, -15);
+    const filter = new Tone.Filter(3200, "lowpass", -12);
+    synth.disconnect();
+    synth.chain(filter, Tone.getDestination());
+    return synth;
+}
+
+function createCelesta() {
+    const synth = polySynth(Tone.FMSynth, {
+        harmonicity: 3.5,
+        modulationIndex: 7,
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.002, decay: 0.7, sustain: 0.05, release: 1.1 },
+        modulation: { type: "sine" },
+        modulationEnvelope: { attack: 0.002, decay: 0.25, sustain: 0.1, release: 0.5 },
+    }, -10);
+    return synth;
+}
+
+function createMarimba() {
+    const synth = polySynth(Tone.MembraneSynth, {
+        pitchDecay: 0.03,
+        octaves: 2.2,
+        envelope: { attack: 0.001, decay: 1.1, sustain: 0.05, release: 0.8 },
+    }, -12);
+    return synth;
+}
+
+function createBell() {
+    const synth = polySynth(Tone.MetalSynth, {
+        frequency: 220,
+        envelope: { attack: 0.001, decay: 1.4, release: 1.5 },
+        harmonicity: 5.1,
+        modulationIndex: 18,
+        resonance: 3000,
+        octaves: 1.8,
+    }, -20);
+    return synth;
+}
+
+function createNylonPluck() {
+    const synth = new Tone.PolySynth(Tone.PluckSynth, {
+        attackNoise: 0.5,
+        dampening: 4800,
+        resonance: 0.9,
+    });
+    synth.volume.value = -10;
+    synth.toDestination();
+    return synth;
+}
+
+function createAccordion() {
+    const synth = polySynth(Tone.Synth, {
+        oscillator: { type: "custom", partials: [1, 0.72, 0.52, 0.3, 0.18, 0.09] },
+        envelope: { attack: 0.04, decay: 0.18, sustain: 0.9, release: 0.35 },
+    }, -14);
+    const filter = new Tone.Filter(3600, "lowpass", -12);
+    const tremolo = new Tone.Tremolo(4.7, 0.12).start();
+    synth.disconnect();
+    synth.chain(filter, tremolo, Tone.getDestination());
+    return synth;
+}
+
+function createVibraphone() {
+    const synth = polySynth(Tone.FMSynth, {
+        harmonicity: 2.01,
+        modulationIndex: 2.8,
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.01, decay: 1.4, sustain: 0.25, release: 2.2 },
+        modulation: { type: "sine" },
+        modulationEnvelope: { attack: 0.01, decay: 0.5, sustain: 0.12, release: 1.2 },
+    }, -13);
+    const tremolo = new Tone.Tremolo(5, 0.2).start();
+    synth.disconnect();
+    synth.chain(tremolo, Tone.getDestination());
     return synth;
 }
 
 function createInstrument(id) {
     switch (id) {
-        case "subtractive":
-            return createSubtractive();
         case "wavetable":
             return createWavetable();
         case "piano":
             return createAcousticPiano();
         case "electric":
             return createElectric();
+        case "organ":
+            return createWarmOrgan();
+        case "strings":
+            return createStringEnsemble();
+        case "celesta":
+            return createCelesta();
+        case "marimba":
+            return createMarimba();
+        case "bell":
+            return createBell();
+        case "nylon":
+            return createNylonPluck();
+        case "accordion":
+            return createAccordion();
+        case "vibraphone":
+            return createVibraphone();
         default:
             return createAcousticPiano();
     }
