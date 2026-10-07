@@ -17,6 +17,7 @@ export default function App() {
     const [soundOn, setSoundOn] = useState(false);
     const [instrument, setInstrument] = useState("piano");
     const [dominant, setDominant] = useState("right");
+    const [keyboardMidi, setKeyboardMidi] = useState([]);
 
     const onResult = useCallback((value) => setResult(value), []);
     const onStatus = useCallback((value) => setStatus(value), []);
@@ -117,6 +118,7 @@ export default function App() {
 
             event.preventDefault();
             pressed.add(event.key.toLowerCase());
+            setKeyboardMidi((current) => current.includes(midi) ? current : [...current, midi]);
 
             if (!soundOn) {
                 return;
@@ -133,6 +135,7 @@ export default function App() {
             }
 
             pressed.delete(key);
+            setKeyboardMidi((current) => current.filter((note) => note !== midi));
             releaseKeyboardNote(midi);
         };
 
@@ -143,6 +146,7 @@ export default function App() {
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
             pressed.clear();
+            setKeyboardMidi([]);
         };
     }, [soundOn]);
 
