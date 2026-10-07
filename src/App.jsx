@@ -77,6 +77,10 @@ export default function App() {
         playerRef.current.playKeyboardNote(midi);
     };
 
+    const releaseKeyboardNote = (midi) => {
+        playerRef.current.releaseKeyboardNote(midi);
+    };
+
     useHandTracking({
         videoRef,
         canvasRef,
@@ -99,6 +103,7 @@ export default function App() {
             dominant={dominant}
             onPickDominant={setDominant}
             onPlayKeyboardNote={playKeyboardNote}
+            onReleaseKeyboardNote={releaseKeyboardNote}
         />
     );
 }
