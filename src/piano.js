@@ -442,7 +442,7 @@ export class Player {
         this.activeNotes = notes;
     }
 
-    playKeyboardNote(midi, duration = 0.45) {
+    playKeyboardNote(midi) {
         if (!this.ready) {
             return;
         }
@@ -453,7 +453,15 @@ export class Player {
 
         const note = midiToNote(midi);
         const velocity = 0.7;
-        this.synth.triggerAttackRelease(note, duration, undefined, velocity);
+        this.synth.triggerAttack(note, undefined, velocity);
+    }
+
+    releaseKeyboardNote(midi) {
+        if (!this.ready || !this.synth) {
+            return;
+        }
+
+        this.synth.triggerRelease(midiToNote(midi), undefined);
     }
 
     releaseAll() {
