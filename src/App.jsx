@@ -31,6 +31,15 @@ export default function App() {
         setInstrument(value);
     };
 
+    const playKeyboardNote = async (midi) => {
+        if (!playerRef.current.ready) {
+            await playerRef.current.start();
+            setSoundOn(true);
+        }
+
+        playerRef.current.playNotes([midi]);
+    };
+
     useHandTracking({
         videoRef,
         canvasRef,
@@ -52,6 +61,7 @@ export default function App() {
             onPickInstrument={pickInstrument}
             dominant={dominant}
             onPickDominant={setDominant}
+            onPlayKeyboardNote={playKeyboardNote}
         />
     );
 }
