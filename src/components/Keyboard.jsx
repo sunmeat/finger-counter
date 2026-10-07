@@ -3,13 +3,17 @@ import { BLACK_PITCHES, KEY_FROM, KEY_TO } from "../constants.js";
 
 const ALL_KEYS = Array.from({ length: KEY_TO - KEY_FROM + 1 }, (_, i) => KEY_FROM + i);
 const WHITE_KEYS = ALL_KEYS.filter((m) => !BLACK_PITCHES.includes(m % 12));
-const BLACK_WIDTH = (100 / WHITE_KEYS.length) * 0.6;
+const KEYBED_INSET = 4;
+const KEYBED_WIDTH = 100 - KEYBED_INSET * 2;
+const BLACK_WIDTH = (KEYBED_WIDTH / WHITE_KEYS.length) * 0.56;
 
 const BLACK_KEYS = ALL_KEYS
     .filter((m) => BLACK_PITCHES.includes(m % 12))
     .map((m) => ({
         m,
-        left: ((WHITE_KEYS.indexOf(m - 1) + 1) / WHITE_KEYS.length) * 100 - BLACK_WIDTH / 2,
+        left: KEYBED_INSET
+            + ((WHITE_KEYS.indexOf(m - 1) + 1) / WHITE_KEYS.length) * KEYBED_WIDTH
+            - BLACK_WIDTH / 2,
     }));
 
 export default function Keyboard({ midi, roots, keyboardMidi = [], onPlayNote, onReleaseNote }) {
