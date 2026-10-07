@@ -436,16 +436,18 @@ body {
 
 .key.white {
   display: flex;
-  flex: 1;
+  flex: 0 0 calc(100% / 14);
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 8px;
+  border: 0;
   border-right: 1px solid #c9c3b3;
   background: var(--ivory);
 }
 
 .key.black {
   position: absolute;
+  border: 0;
   top: 0;
   z-index: 1;
   height: 62%;
@@ -488,6 +490,16 @@ body {
 
 .key.black:hover {
   background: #18232d;
+}
+
+.key.pressed.white {
+  background: #c9a95f;
+  box-shadow: inset 0 -4px 0 rgba(16, 26, 35, 0.22);
+}
+
+.key.pressed.black {
+  background: #4b5964;
+  box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.08);
 }
 
 .key:active,
