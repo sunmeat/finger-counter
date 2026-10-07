@@ -21,9 +21,11 @@ export default function App() {
     const onResult = useCallback((value) => setResult(value), []);
     const onStatus = useCallback((value) => setStatus(value), []);
 
-    const enableSound = useCallback(async () => {
-        if (playerRef.current.ready) {
-            setSoundOn(true);
+    const toggleSound = useCallback(async () => {
+        if (soundOn) {
+            playerRef.current.releaseAll();
+            playerRef.current.releaseKeyboardNotes();
+            setSoundOn(false);
             return;
         }
 
@@ -33,20 +35,15 @@ export default function App() {
         } catch (error) {
             console.error("Не удалось включить звук:", error);
         }
-    }, []);
+    }, [soundOn]);
 
     useEffect(() => {
         const unlockAudio = () => {
-            void enableSound();
+            if (!playerRef.current.ready) {
+                void playerRef.current.start();
+            }
         };
 
-        /*
-         * Любое реальное действие пользователя по странице
-         * может разблокировать Web Audio API.
-         *
-         * mousemove специально не используем: браузеры не
-         * считают простое движение мыши надёжным user gesture.
-         */
         window.addEventListener("pointerdown", unlockAudio, {
             capture: true,
             once: true,
@@ -61,7 +58,7 @@ export default function App() {
             window.removeEventListener("pointerdown", unlockAudio, true);
             window.removeEventListener("keydown", unlockAudio, true);
         };
-    }, [enableSound]);
+    }, []);
 
     const pickInstrument = (value) => {
         playerRef.current.setInstrument(value);
@@ -69,9 +66,12 @@ export default function App() {
     };
 
     const playKeyboardNote = async (midi) => {
+        if (!soundOn) {
+            return;
+        }
+
         if (!playerRef.current.ready) {
             await playerRef.current.start();
-            setSoundOn(true);
         }
 
         playerRef.current.playKeyboardNote(midi);
@@ -97,7 +97,7 @@ export default function App() {
             result={result}
             status={status}
             soundOn={soundOn}
-            onEnableSound={enableSound}
+            onEnableSound={toggleSound}
             instrument={instrument}
             onPickInstrument={pickInstrument}
             dominant={dominant}
