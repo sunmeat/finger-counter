@@ -74,7 +74,7 @@ export default function App() {
             setSoundOn(true);
         }
 
-        playerRef.current.playNotes([midi]);
+        playerRef.current.playKeyboardNote(midi);
     };
 
     useHandTracking({
