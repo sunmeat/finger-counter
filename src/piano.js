@@ -279,7 +279,7 @@ export class Player {
         }
 
         if (this.instrument === "piano") {
-            await this.pianoLoaded;
+            await Tone.loaded();
         }
     }
 
