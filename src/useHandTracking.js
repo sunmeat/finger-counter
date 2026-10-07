@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-vision";
 import { countFingers } from "./countFingers.js";
 import { planSound } from "./piano.js";
@@ -27,6 +27,12 @@ export default function useHandTracking({
     onResult,
     onStatus,
 }) {
+    const dominantRef = useRef(dominant);
+
+    useEffect(() => {
+        dominantRef.current = dominant;
+    }, [dominant]);
+
     useEffect(() => {
         let landmarker;
         let stream;
@@ -120,7 +126,7 @@ export default function useHandTracking({
 
                             fixSides(hands);
 
-                            const { noteSide, chordSide } = rolesFor(dominant);
+                            const { noteSide, chordSide } = rolesFor(dominantRef.current);
 
                             hands.forEach((h, i) => {
                                 const color =
@@ -190,5 +196,5 @@ export default function useHandTracking({
             landmarker?.close();
             player.releaseAll();
         };
-    }, [videoRef, canvasRef, dominant, player, onResult, onStatus]);
+    }, [videoRef, canvasRef, player, onResult, onStatus]);
 }
