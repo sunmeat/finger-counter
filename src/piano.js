@@ -129,10 +129,19 @@ export const INSTRUMENTS = [
     { id: "strings", name: "String Ensemble" },
     { id: "celesta", name: "Celesta" },
     { id: "marimba", name: "Marimba" },
-    { id: "bell", name: "Bell" },
     { id: "nylon", name: "Nylon Pluck" },
     { id: "accordion", name: "Accordion" },
     { id: "vibraphone", name: "Vibraphone" },
+    { id: "soft-pad", name: "Soft Pad" },
+    { id: "analog-lead", name: "Analog Lead" },
+    { id: "retro-synth", name: "Retro Synth" },
+    { id: "brass", name: "Synth Brass" },
+    { id: "flute", name: "Flute" },
+    { id: "choir", name: "Choir Pad" },
+    { id: "digital-piano", name: "Digital Piano" },
+    { id: "clavinet", name: "Clavinet" },
+    { id: "deep-bass", name: "Deep Bass" },
+    { id: "dream-pad", name: "Dream Pad" },
 ];
 
 const PIANO_BASE_URL = "https://tonejs.github.io/audio/salamander/";
@@ -218,18 +227,6 @@ function createMarimba() {
     return synth;
 }
 
-function createBell() {
-    const synth = polySynth(Tone.MetalSynth, {
-        frequency: 220,
-        envelope: { attack: 0.001, decay: 1.4, release: 1.5 },
-        harmonicity: 5.1,
-        modulationIndex: 18,
-        resonance: 3000,
-        octaves: 1.8,
-    }, -20);
-    return synth;
-}
-
 function createNylonPluck() {
     const synth = polySynth(Tone.Synth, {
         oscillator: { type: "triangle" },
@@ -268,6 +265,76 @@ function createVibraphone() {
     return synth;
 }
 
+function createSoftPad() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "fatsine", count: 3, spread: 18 },
+        envelope: { attack: 0.7, decay: 0.5, sustain: 0.82, release: 2.8 },
+    }, -16);
+}
+
+function createAnalogLead() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "sawtooth" },
+        envelope: { attack: 0.01, decay: 0.18, sustain: 0.68, release: 0.45 },
+    }, -15);
+}
+
+function createRetroSynth() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "square" },
+        envelope: { attack: 0.008, decay: 0.22, sustain: 0.58, release: 0.35 },
+    }, -17);
+}
+
+function createBrass() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "fatsawtooth", count: 3, spread: 12 },
+        envelope: { attack: 0.12, decay: 0.22, sustain: 0.72, release: 0.65 },
+    }, -16);
+}
+
+function createFlute() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "triangle" },
+        envelope: { attack: 0.08, decay: 0.2, sustain: 0.82, release: 0.7 },
+    }, -13);
+}
+
+function createChoir() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "fatsine", count: 3, spread: 9 },
+        envelope: { attack: 0.28, decay: 0.25, sustain: 0.88, release: 1.7 },
+    }, -17);
+}
+
+function createDigitalPiano() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "custom", partials: [1, 0.45, 0.18, 0.08, 0.025] },
+        envelope: { attack: 0.004, decay: 0.5, sustain: 0.38, release: 1.1 },
+    }, -11);
+}
+
+function createClavinet() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "square" },
+        envelope: { attack: 0.002, decay: 0.18, sustain: 0.12, release: 0.22 },
+    }, -16);
+}
+
+function createDeepBass() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "triangle" },
+        envelope: { attack: 0.025, decay: 0.3, sustain: 0.72, release: 0.8 },
+    }, -13);
+}
+
+function createDreamPad() {
+    return polySynth(Tone.Synth, {
+        oscillator: { type: "fatsine", count: 5, spread: 28 },
+        envelope: { attack: 1.1, decay: 0.8, sustain: 0.9, release: 3.8 },
+    }, -19);
+}
+
 function createInstrument(id) {
     switch (id) {
         case "wavetable":
@@ -282,14 +349,32 @@ function createInstrument(id) {
             return createCelesta();
         case "marimba":
             return createMarimba();
-        case "bell":
-            return createBell();
         case "nylon":
             return createNylonPluck();
         case "accordion":
             return createAccordion();
         case "vibraphone":
             return createVibraphone();
+        case "soft-pad":
+            return createSoftPad();
+        case "analog-lead":
+            return createAnalogLead();
+        case "retro-synth":
+            return createRetroSynth();
+        case "brass":
+            return createBrass();
+        case "flute":
+            return createFlute();
+        case "choir":
+            return createChoir();
+        case "digital-piano":
+            return createDigitalPiano();
+        case "clavinet":
+            return createClavinet();
+        case "deep-bass":
+            return createDeepBass();
+        case "dream-pad":
+            return createDreamPad();
         default:
             return createAcousticPiano();
     }
@@ -355,6 +440,20 @@ export class Player {
         const velocity = Math.min(0.82, 0.95 / Math.sqrt(notes.length));
         this.synth.triggerAttack(notes, undefined, velocity);
         this.activeNotes = notes;
+    }
+
+    playKeyboardNote(midi, duration = 0.45) {
+        if (!this.ready) {
+            return;
+        }
+
+        if (!this.synth) {
+            this.synth = this.#ensureInstrument(this.instrument);
+        }
+
+        const note = midiToNote(midi);
+        const velocity = 0.7;
+        this.synth.triggerAttackRelease(note, duration, undefined, velocity);
     }
 
     releaseAll() {
