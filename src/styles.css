@@ -1,35 +1,139 @@
+@import url("https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500..700&family=Onest:wght@400..600&display=swap");
+
+/* ---------- Цвета и шрифты ---------- */
+
+:root {
+  --bg: #121c26;
+  --panel: #192531;
+  --line: #2a3a49;
+  --text: #ebe6da;
+  --muted: #93a3b0;
+  --ink: #101a23;
+  --ivory: #f1ecdf;
+  --ebony: #0b1117;
+
+  /* у каждой руки свой цвет: правая — ноты, левая — аккорды */
+  --right: #f0b44c;
+  --left: #62cbd9;
+
+  --serif: "Literata", Georgia, "Times New Roman", serif;
+  --sans: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  background: #111;
-  color: #eee;
 }
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.45;
+}
+
+/* ---------- Сетка страницы ---------- */
 
 .app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 24px 16px;
+  display: grid;
+  grid-template-columns: minmax(210px, 1fr) minmax(0, 640px) minmax(210px, 1fr);
+  grid-template-areas:
+    "head head head"
+    "left stage right";
+  gap: 24px 28px;
+  align-items: start;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: clamp(16px, 3vw, 36px);
 }
 
-h1 {
-  margin: 0;
-  font-size: 1.6rem;
+.head {
+  grid-area: head;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
+
+.title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.panel-left {
+  grid-area: left;
+  --hand: var(--left);
+}
+
+.panel-right {
+  grid-area: right;
+  --hand: var(--right);
+}
+
+.center {
+  grid-area: stage;
+  display: grid;
+  gap: 18px;
+  width: 100%;
+  max-width: 640px;
+  justify-self: center;
+}
+
+/* ---------- Кнопка звука ---------- */
+
+.sound-btn {
+  padding: 12px 22px;
+  border: 1px solid var(--right);
+  border-radius: 999px;
+  background: var(--right);
+  color: var(--ink);
+  font: 600 1rem/1 var(--sans);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.sound-btn:hover:not(:disabled) {
+  background: #f6c668;
+}
+
+.sound-btn:focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 3px;
+}
+
+.sound-btn:disabled {
+  background: transparent;
+  color: var(--right);
+  cursor: default;
+}
+
+/* ---------- Видео ---------- */
 
 .stage {
   position: relative;
-  width: min(100%, 640px);
+  width: 100%;
   aspect-ratio: 4 / 3;
-  background: #000;
-  border-radius: 12px;
   overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--ebony);
 }
 
 .stage video,
@@ -39,38 +143,260 @@ h1 {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scaleX(-1); /* зеркало */
+  transform: scaleX(-1);
 }
 
-.count {
-  font-size: 7rem;
+.chip {
+  position: absolute;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(11, 17, 23, 0.84);
+  font-size: 0.9rem;
+}
+
+.stage-count {
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.stage-count strong {
+  min-width: 0.7em;
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1;
 }
 
-.status {
-  margin: 0;
-  color: #999;
+.stage-note {
+  bottom: 12px;
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  transform: translateX(-50%);
+  text-align: center;
 }
 
-.fingers {
+/* ---------- Что играет сейчас ---------- */
+
+.now {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  min-height: 96px;
+  text-align: center;
+}
+
+.now-chord {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4.4vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.now-chord.idle {
+  color: var(--muted);
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+  font-weight: 500;
+}
+
+.now-notes,
+.now-hint {
+  margin: 0;
+  color: var(--muted);
+}
+
+.now-hint {
+  color: var(--right);
+}
+
+/* ---------- Клавиатура ---------- */
+
+.keys {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
+  height: clamp(96px, 14vw, 128px);
+  overflow: hidden;
+  border: 1px solid var(--ebony);
+  border-radius: 6px 6px 14px 14px;
+  background: var(--ebony);
+}
+
+.key {
+  transition: background 0.08s;
+}
+
+.key.white {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
   justify-content: center;
+  padding-bottom: 8px;
+  border-right: 1px solid #c9c3b3;
+  background: var(--ivory);
+}
+
+.key.black {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  height: 62%;
+  border-radius: 0 0 5px 5px;
+  background: var(--ebony);
+}
+
+/* корень выбрала правая рука, остальные звуки аккорда — левая */
+.key.root {
+  background: var(--right);
+}
+
+.key.tone {
+  background: var(--left);
+}
+
+.key-c {
+  color: #6d6a60;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.key.root .key-c,
+.key.tone .key-c {
+  color: var(--ink);
+}
+
+/* ---------- Боковые панели ---------- */
+
+.panel {
+  padding: 18px 16px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+.panel-head {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.panel-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.panel-role {
+  margin: 0;
+  color: var(--muted);
+}
+
+.seen {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.seen::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--hand);
+  border-radius: 50%;
+}
+
+.seen.on {
+  color: var(--text);
+}
+
+.seen.on::before {
+  background: var(--hand);
+}
+
+.rows {
+  display: grid;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.fingers li {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: #222;
-  color: #777;
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  color: var(--muted);
+  transition: background 0.12s, color 0.12s;
 }
 
-.fingers li.up {
-  background: #00c853;
-  color: #000;
+.row-plain {
+  margin-bottom: 8px;
+}
+
+.row-value {
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 1.08rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.row.on {
+  background: var(--hand);
+  color: var(--ink);
+}
+
+.row.on .row-value {
+  color: var(--ink);
+}
+
+.panel-note {
+  margin: 14px 4px 2px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---------- Узкие экраны ---------- */
+
+@media (max-width: 1100px) {
+  .app {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "head head"
+      "stage stage"
+      "left right";
+  }
+}
+
+@media (max-width: 600px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "stage"
+      "left"
+      "right";
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
 }
