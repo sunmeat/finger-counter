@@ -93,9 +93,8 @@ export default function PianoScreen({
                         type="button"
                         className="sound-btn"
                         onClick={onEnableSound}
-                        disabled={soundOn}
                     >
-                        {soundOn ? "Звук включён" : "Включить звук"}
+                        {soundOn ? "Звук включён" : "Звук выключен"}
                     </button>
                 </div>
             </header>
@@ -124,7 +123,7 @@ export default function PianoScreen({
 
                             {!soundOn && (
                                 <p className="now-hint">
-                                    Нажмите «Включить звук», чтобы услышать
+                                    Нажмите «Звук выключен», чтобы услышать
                                 </p>
                             )}
                         </>
