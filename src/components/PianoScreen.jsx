@@ -26,6 +26,7 @@ export default function PianoScreen({
     onPickInstrument,
     dominant,
     onPickDominant,
+    onPlayKeyboardNote,
 }) {
     const { noteSide, chordSide } = rolesFor(dominant);
     const noteHand = result?.hands.find((h) => h.side === noteSide);
@@ -133,7 +134,11 @@ export default function PianoScreen({
                     )}
                 </section>
 
-                <Keyboard midi={result?.midi ?? []} roots={result?.roots ?? []} />
+                <Keyboard
+                    midi={result?.midi ?? []}
+                    roots={result?.roots ?? []}
+                    onPlayNote={onPlayKeyboardNote}
+                />
             </div>
 
             <HandPanel {...panelFor("right")} />
