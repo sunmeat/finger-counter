@@ -32,9 +32,7 @@ export default function Keyboard({ midi, roots, onPlayNote, onReleaseNote }) {
                     onPointerUp={() => onReleaseNote?.(m)}
                     onPointerCancel={() => onReleaseNote?.(m)}
                     aria-label={"Нота " + NOTE_NAMES[m % 12]}
-                >
-                    {m % 12 === 0 && <span className="key-c">до</span>}
-                </button>
+                />
             ))}
 
             {BLACK_KEYS.map(({ m, left }) => (
