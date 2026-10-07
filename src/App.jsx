@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-vision";
 import { countFingers } from "./countFingers.js";
-import { Piano, planSound, ROOT_MIDI, CHORD_TYPES, NOTE_NAMES } from "./piano.js";
+import { Player, INSTRUMENTS, planSound, ROOT_MIDI, CHORD_TYPES, NOTE_NAMES } from "./piano.js";
 
 const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 const MODEL_URL =
@@ -9,10 +9,17 @@ const MODEL_URL =
 
 const FINGER_NAMES = ["Большой", "Указательный", "Средний", "Безымянный", "Мизинец"];
 
-// MediaPipe определяет левую/правую руку в предположении, что кадр уже зеркальный (как селфи).
-// Мы подаём в модель обычный, незеркальный кадр (зеркалит только CSS), поэтому метки меняем местами.
-// Если на практике правая рука управляет аккордами, а левая — нотами, поставьте false.
-const SWAP_HANDS = true;
+// Правша: левая рука — основа аккорда (нота), правая — сам аккорд (мажор, минор…).
+// Левша: наоборот.
+const HANDEDNESS = [
+  { id: "right", name: "Правша" },
+  { id: "left", name: "Левша" },
+];
+
+// MediaPipe возвращает метку "Left"/"Right" для каждой руки. Эта настройка говорит, как её читать.
+// false — метка означает ту руку, что видит пользователь (так и работает у вас на практике).
+// Если вдруг левая и правая снова окажутся перепутаны, поставьте true.
+const SWAP_HANDS = false;
 
 // Сколько кадров подряд комбинация пальцев должна держаться, чтобы мы её сыграли.
 // Защищает от «дребезга» распознавания (~4 кадра ≈ 0.13 с при 30 fps).
@@ -25,13 +32,27 @@ function sideFromLabel(label) {
 }
 
 // MediaPipe иногда помечает обе руки одинаково. Тогда решаем по положению на кадре:
-// в незеркальном кадре правая рука пользователя находится левее на картинке.
+// в незеркальном кадре правая рука пользователя находится левее на картинке
+// (на экране видео зеркалится, и она оказывается справа).
 function fixSides(hands) {
   if (hands.length === 2 && hands[0].side === hands[1].side) {
     const rightIdx = hands[0].wristX < hands[1].wristX ? 0 : 1;
     hands[rightIdx].side = "right";
     hands[1 - rightIdx].side = "left";
   }
+}
+
+// Какая физическая рука играет какую роль в зависимости от ведущей руки.
+function rolesFor(dominant) {
+  const noteSide = dominant === "right" ? "left" : "right";
+  const chordSide = noteSide === "left" ? "right" : "left";
+  return { noteSide, chordSide };
+}
+
+// Рисует скелет одной руки: линии и точки одним цветом (цветом роли руки).
+function drawHand(drawing, landmarks, color, ink) {
+  drawing.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, { color, lineWidth: 3 });
+  drawing.drawLandmarks(landmarks, { color: ink, fillColor: color, lineWidth: 1.5, radius: 4 });
 }
 
 // ---------- Мини-клавиатура: от ля малой октавы (57) до соль второй (79) ----------
@@ -69,11 +90,32 @@ function Keyboard({ midi, roots }) {
   );
 }
 
+// ---------- Переключатель из нескольких кнопок (инструмент, правша/левша) ----------
+
+function Segmented({ label, options, value, onChange }) {
+  return (
+      <div className="tool-group" role="group" aria-label={label}>
+        {options.map(({ id, name }) => (
+            <button
+                key={id}
+                type="button"
+                className={`tool${id === value ? " on" : ""}`}
+                aria-pressed={id === value}
+                onClick={() => onChange(id)}
+            >
+              {name}
+            </button>
+        ))}
+      </div>
+  );
+}
+
 // ---------- Боковая панель руки ----------
 
-function HandPanel({ side, title, role, seen, rows, note }) {
+// tone: "note" (жёлтая — рука с нотой) или "chord" (синяя — рука с аккордом)
+function HandPanel({ side, tone, title, role, seen, rows, note }) {
   return (
-      <section className={`panel panel-${side}`} aria-label={title}>
+      <section className={`panel panel-${side} role-${tone}`} aria-label={title}>
         <header className="panel-head">
           <h2 className="panel-title">{title}</h2>
           <p className="panel-role">{role}</p>
@@ -100,47 +142,79 @@ function HandPanel({ side, title, role, seen, rows, note }) {
 
 // ---------- Экран (только отображение, без логики камеры) ----------
 
-function Screen({ videoRef, canvasRef, result, status, soundOn, onEnableSound }) {
-  const right = result?.hands.find((h) => h.side === "right");
-  const left = result?.hands.find((h) => h.side === "left");
+function Screen({
+                  videoRef,
+                  canvasRef,
+                  result,
+                  status,
+                  soundOn,
+                  onEnableSound,
+                  instrument,
+                  onPickInstrument,
+                  dominant,
+                  onPickDominant,
+                }) {
+  const { noteSide, chordSide } = rolesFor(dominant);
+  const noteHand = result?.hands.find((h) => h.side === noteSide);
+  const chordHand = result?.hands.find((h) => h.side === chordSide);
   const playing = Boolean(result?.midi.length);
-  const leftIdx = left ? left.fingers.indexOf(true) : -1;
+  const chordIdx = chordHand ? chordHand.fingers.indexOf(true) : -1;
 
-  const rightRows = FINGER_NAMES.map((finger, i) => ({
+  const noteRows = FINGER_NAMES.map((finger, i) => ({
     finger,
     value: NOTE_NAMES[ROOT_MIDI[i] % 12],
-    active: Boolean(right?.fingers[i]),
+    active: Boolean(noteHand?.fingers[i]),
   }));
 
-  const leftRows = [
-    { finger: "Без пальцев", value: "одна нота", plain: true, active: playing && leftIdx === -1 },
+  const chordRows = [
+    { finger: "Без пальцев", value: "одна нота", plain: true, active: playing && chordIdx === -1 },
     ...FINGER_NAMES.map((finger, i) => ({
       finger,
       value: CHORD_TYPES[i].name,
-      active: leftIdx === i,
+      active: chordIdx === i,
     })),
   ];
+
+  // панель на экране слева — про левую руку, справа — про правую (видео зеркальное, как в зеркале)
+  const panelFor = (side) => {
+    const isNote = side === noteSide;
+    const hand = isNote ? noteHand : chordHand;
+    return {
+      side,
+      tone: isNote ? "note" : "chord",
+      title: side === "left" ? "Левая рука" : "Правая рука",
+      role: isNote ? "Задаёт основную ноту" : "Выбирает аккорд",
+      seen: Boolean(hand),
+      rows: isNote ? noteRows : chordRows,
+      note: isNote
+          ? "Можно поднять несколько пальцев: сыграют аккорды от всех выбранных нот."
+          : "Если подняты несколько пальцев, работает тот, что выше в списке.",
+    };
+  };
+
+  const lede = `${noteSide === "left" ? "Левая" : "Правая"} рука задаёт основную ноту, ${
+      chordSide === "left" ? "левая" : "правая"
+  } выбирает аккорд.`;
 
   return (
       <main className="app">
         <header className="head">
           <div>
             <h1 className="title">Пианино на пальцах</h1>
-            <p className="lede">Правая рука берёт ноту, левая выбирает тип аккорда.</p>
+            <p className="lede">{lede}</p>
           </div>
-          <button type="button" className="sound-btn" onClick={onEnableSound} disabled={soundOn}>
-            {soundOn ? "Звук включён" : "Включить звук"}
-          </button>
+
+          <div className="toolbar">
+            <Segmented label="Инструмент" options={INSTRUMENTS} value={instrument} onChange={onPickInstrument} />
+            <Segmented label="Ведущая рука" options={HANDEDNESS} value={dominant} onChange={onPickDominant} />
+
+            <button type="button" className="sound-btn" onClick={onEnableSound} disabled={soundOn}>
+              {soundOn ? "Звук включён" : "Включить звук"}
+            </button>
+          </div>
         </header>
 
-        <HandPanel
-            side="left"
-            title="Левая рука"
-            role="Выбирает аккорд"
-            seen={Boolean(left)}
-            rows={leftRows}
-            note="Если подняты несколько пальцев, работает тот, что выше в списке."
-        />
+        <HandPanel {...panelFor("left")} />
 
         <div className="center">
           <div className="stage">
@@ -161,21 +235,14 @@ function Screen({ videoRef, canvasRef, result, status, soundOn, onEnableSound })
                   {!soundOn && <p className="now-hint">Нажмите «Включить звук», чтобы услышать</p>}
                 </>
             ) : (
-                <p className="now-chord idle">Поднимите палец правой руки</p>
+                <p className="now-chord idle">Поднимите палец {noteSide === "left" ? "левой" : "правой"} руки</p>
             )}
           </section>
 
           <Keyboard midi={result?.midi ?? []} roots={result?.roots ?? []} />
         </div>
 
-        <HandPanel
-            side="right"
-            title="Правая рука"
-            role="Берёт ноту"
-            seen={Boolean(right)}
-            rows={rightRows}
-            note="Можно поднять несколько пальцев: сыграют все их ноты сразу."
-        />
+        <HandPanel {...panelFor("right")} />
       </main>
   );
 }
@@ -185,21 +252,34 @@ function Screen({ videoRef, canvasRef, result, status, soundOn, onEnableSound })
 export default function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const pianoRef = useRef(null);
-  if (!pianoRef.current) pianoRef.current = new Piano();
+  const playerRef = useRef(null);
+  if (!playerRef.current) playerRef.current = new Player();
 
   const [status, setStatus] = useState("Загрузка модели…");
   const [result, setResult] = useState(null); // { count, hands, chord, midi, roots } | null
   const [soundOn, setSoundOn] = useState(false);
+  const [instrument, setInstrument] = useState("piano");
+  const [dominant, setDominant] = useState("right"); // ведущая рука: "right" — правша, "left" — левша
+
+  // цикл распознавания живёт один раз, поэтому текущий выбор он читает через ref
+  const dominantRef = useRef(dominant);
+  useEffect(() => {
+    dominantRef.current = dominant;
+  }, [dominant]);
 
   // Клик по кнопке — единственный способ разрешить браузеру воспроизводить звук.
   const enableSound = async () => {
-    await pianoRef.current.start();
+    await playerRef.current.start();
     setSoundOn(true);
   };
 
+  // Выбранный инструмент подхватывается при следующей ноте — цикл распознавания трогать не нужно.
   useEffect(() => {
-    const piano = pianoRef.current;
+    playerRef.current.setInstrument(instrument);
+  }, [instrument]);
+
+  useEffect(() => {
+    const player = playerRef.current;
     let landmarker;
     let stream;
     let rafId;
@@ -220,8 +300,8 @@ export default function App() {
       }
       if (pendingFrames >= STABLE_FRAMES && plan.key !== playingKey) {
         playingKey = plan.key;
-        piano.releaseAll();
-        piano.playNotes(plan.midi); // пустой массив = тишина
+        player.releaseAll();
+        player.playNotes(plan.midi); // пустой массив = тишина
       }
     }
 
@@ -252,6 +332,16 @@ export default function App() {
         const ctx = canvas.getContext("2d");
         const drawing = new DrawingUtils(ctx);
 
+        // цвета скелета берём из CSS, чтобы они всегда совпадали с подсветкой в панелях
+        const css = getComputedStyle(document.documentElement);
+        const cssVar = (name, fallback) => css.getPropertyValue(name).trim() || fallback;
+        const colors = {
+          note: cssVar("--note", "#f0b44c"),
+          chord: cssVar("--chord", "#62cbd9"),
+          neutral: cssVar("--ivory", "#f1ecdf"),
+          ink: cssVar("--ink", "#101a23"),
+        };
+
         const loop = () => {
           if (cancelled) return;
           if (video.currentTime !== lastVideoTime) {
@@ -263,28 +353,31 @@ export default function App() {
             if (res.landmarks.length > 0) {
               const handedness = res.handedness ?? res.handednesses ?? [];
 
-              const hands = res.landmarks.map((lm, i) => {
-                drawing.drawConnectors(lm, HandLandmarker.HAND_CONNECTIONS, {
-                  color: "#f1ecdf",
-                  lineWidth: 3,
-                });
-                drawing.drawLandmarks(lm, { color: "#f0b44c", radius: 3 });
-
-                return {
-                  ...countFingers(lm),
-                  side: sideFromLabel(handedness[i]?.[0]?.categoryName),
-                  wristX: lm[0].x,
-                };
-              });
+              const hands = res.landmarks.map((lm, i) => ({
+                ...countFingers(lm),
+                side: sideFromLabel(handedness[i]?.[0]?.categoryName),
+                wristX: lm[0].x,
+              }));
               fixSides(hands);
 
-              const right = hands.find((h) => h.side === "right");
-              const left = hands.find((h) => h.side === "left");
-              const plan = planSound(right?.fingers, left?.fingers);
+              // кто задаёт ноту, а кто аккорд — зависит от выбора «правша / левша»
+              const dom = dominantRef.current;
+              const { noteSide, chordSide } = rolesFor(dom);
+
+              // рука с нотой рисуется жёлтым, рука с аккордом — синим, как в панелях
+              hands.forEach((h, i) => {
+                const color =
+                    h.side === noteSide ? colors.note : h.side === chordSide ? colors.chord : colors.neutral;
+                drawHand(drawing, res.landmarks[i], color, colors.ink);
+              });
+
+              const noteHand = hands.find((h) => h.side === noteSide);
+              const chordHand = hands.find((h) => h.side === chordSide);
+              const plan = planSound(noteHand?.fingers, chordHand?.fingers);
               updateSound(plan);
 
               // обновляем React-состояние только при реальных изменениях
-              const uiKey = hands.map((h) => h.side + h.fingers.map(Number).join("")).join("|");
+              const uiKey = dom + "|" + hands.map((h) => h.side + h.fingers.map(Number).join("")).join("|");
               if (uiKey !== lastUiKey) {
                 lastUiKey = uiKey;
                 setResult({
@@ -319,7 +412,7 @@ export default function App() {
       cancelAnimationFrame(rafId);
       stream?.getTracks().forEach((t) => t.stop());
       landmarker?.close();
-      piano.releaseAll();
+      player.releaseAll();
     };
   }, []);
 
@@ -331,6 +424,10 @@ export default function App() {
           status={status}
           soundOn={soundOn}
           onEnableSound={enableSound}
+          instrument={instrument}
+          onPickInstrument={setInstrument}
+          dominant={dominant}
+          onPickDominant={setDominant}
       />
   );
 }

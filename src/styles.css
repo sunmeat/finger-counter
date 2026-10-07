@@ -12,9 +12,11 @@
   --ivory: #f1ecdf;
   --ebony: #0b1117;
 
-  /* у каждой руки свой цвет: правая — ноты, левая — аккорды */
-  --right: #f0b44c;
-  --left: #62cbd9;
+  /* цвет несёт смысл и принадлежит роли, а не стороне:
+     жёлтый — рука с основной нотой, синий — рука с аккордом.
+     Такими же цветами рисуются точки и линии руки на видео (см. App.jsx). */
+  --note: #f0b44c;
+  --chord: #62cbd9;
 
   --serif: "Literata", Georgia, "Times New Roman", serif;
   --sans: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -77,14 +79,22 @@ body {
   color: var(--muted);
 }
 
+/* панель слева всегда про левую руку, справа — про правую */
 .panel-left {
   grid-area: left;
-  --hand: var(--left);
 }
 
 .panel-right {
   grid-area: right;
-  --hand: var(--right);
+}
+
+/* цвет панели зависит от роли руки (меняется переключателем «Правша / Левша») */
+.panel.role-note {
+  --hand: var(--note);
+}
+
+.panel.role-chord {
+  --hand: var(--chord);
 }
 
 .center {
@@ -96,13 +106,56 @@ body {
   justify-self: center;
 }
 
+/* ---------- Панель инструментов ---------- */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.tool-group {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+}
+
+.tool {
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 500 0.95rem/1 var(--sans);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.tool:hover:not(.on) {
+  color: var(--text);
+}
+
+.tool.on {
+  background: var(--text);
+  color: var(--ink);
+}
+
+.tool:focus-visible {
+  outline: 3px solid var(--note);
+  outline-offset: 2px;
+}
+
 /* ---------- Кнопка звука ---------- */
 
 .sound-btn {
   padding: 12px 22px;
-  border: 1px solid var(--right);
+  border: 1px solid var(--note);
   border-radius: 999px;
-  background: var(--right);
+  background: var(--note);
   color: var(--ink);
   font: 600 1rem/1 var(--sans);
   cursor: pointer;
@@ -120,7 +173,7 @@ body {
 
 .sound-btn:disabled {
   background: transparent;
-  color: var(--right);
+  color: var(--note);
   cursor: default;
 }
 
@@ -214,7 +267,7 @@ body {
 }
 
 .now-hint {
-  color: var(--right);
+  color: var(--note);
 }
 
 /* ---------- Клавиатура ---------- */
@@ -252,13 +305,13 @@ body {
   background: var(--ebony);
 }
 
-/* корень выбрала правая рука, остальные звуки аккорда — левая */
+/* корень выбрала рука с нотой (жёлтый), остальные звуки аккорда добавила рука с аккордом (синий) */
 .key.root {
-  background: var(--right);
+  background: var(--note);
 }
 
 .key.tone {
-  background: var(--left);
+  background: var(--chord);
 }
 
 .key-c {
