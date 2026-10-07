@@ -12,12 +12,13 @@ const BLACK_KEYS = ALL_KEYS
         left: ((WHITE_KEYS.indexOf(m - 1) + 1) / WHITE_KEYS.length) * 100 - BLACK_WIDTH / 2,
     }));
 
-export default function Keyboard({ midi, roots, onPlayNote, onReleaseNote }) {
+export default function Keyboard({ midi, roots, keyboardMidi = [], onPlayNote, onReleaseNote }) {
     const sounding = new Set(midi);
+    const pressed = new Set(keyboardMidi);
     const rootSet = new Set(roots);
 
     const keyClass = (m, base) =>
-        `key ${base}${rootSet.has(m) ? " root" : sounding.has(m) ? " tone" : ""}`;
+        `key ${base}${pressed.has(m) ? " pressed" : rootSet.has(m) ? " root" : sounding.has(m) ? " tone" : ""}`;
 
     const names = midi.map((m) => NOTE_NAMES[m % 12]).join(", ");
 
