@@ -424,14 +424,19 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: repeat(14, minmax(0, 1fr));
-  width: 94%;
+  width: 100%;
   justify-self: center;
-  height: clamp(88px, 12vw, 116px);
+  height: clamp(92px, 12vw, 122px);
+  padding: 5px 4%;
   overflow: hidden;
   border: 1px solid #05090d;
-  border-radius: 8px 8px 12px 12px;
-  background: #05090d;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-radius: 12px 12px 16px 16px;
+  background:
+    linear-gradient(180deg, #24323d 0%, #0b1218 24%, #05090d 100%);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6);
 }
 
 .key {
@@ -446,9 +451,11 @@ body {
   justify-content: center;
   padding-bottom: 7px;
   border: 0;
-  border-right: 1px solid #d2ccbd;
-  border-bottom: 3px solid #c4bdae;
-  background: linear-gradient(180deg, #faf6ea 0%, var(--ivory) 78%, #ddd6c7 100%);
+  border-right: 1px solid #c8c1b3;
+  border-bottom: 4px solid #b8b0a0;
+  background:
+    linear-gradient(180deg, #fffdf6 0%, #f3eee3 72%, #d7d0c1 100%);
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.45);
 }
 
 .key.black {
@@ -456,11 +463,14 @@ body {
   border: 0;
   top: 0;
   z-index: 1;
-  height: 60%;
-  border-radius: 0 0 6px 6px;
-  border-bottom: 3px solid #05090d;
-  background: linear-gradient(180deg, #18232d 0%, var(--ebony) 72%);
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.28);
+  height: 59%;
+  border-radius: 0 0 7px 7px;
+  border-bottom: 3px solid #03070a;
+  background:
+    linear-gradient(180deg, #354652 0%, #121b23 48%, #070c11 100%);
+  box-shadow:
+    0 5px 8px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* корень выбрала рука с нотой (жёлтый), остальные звуки аккорда добавила рука с аккордом (синий) */
@@ -493,11 +503,13 @@ body {
 }
 
 .key.white:hover {
-  background: linear-gradient(180deg, #fffdf7 0%, #f4eee1 78%, #ddd6c7 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f6f0e4 72%, #ddd5c5 100%);
+  transform: translateY(-1px);
 }
 
 .key.black:hover {
-  background: linear-gradient(180deg, #263642 0%, #111a22 72%);
+  background: linear-gradient(180deg, #455865 0%, #17232d 52%, #0b1117 100%);
+  transform: translateY(-1px);
 }
 
 .key.pressed.white {
