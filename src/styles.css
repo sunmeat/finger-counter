@@ -149,6 +149,52 @@ body {
   outline-offset: 2px;
 }
 
+.instrument-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 8px 4px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.instrument-select span {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.instrument-select select {
+  min-width: 230px;
+  padding: 8px 30px 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--ink);
+  font: 600 0.9rem/1 var(--sans);
+  cursor: pointer;
+}
+
+.instrument-select select:focus-visible {
+  outline: 3px solid var(--note);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .instrument-select {
+    width: 100%;
+  }
+
+  .instrument-select select {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
 /* ---------- Кнопка звука ---------- */
 
 .sound-btn {
