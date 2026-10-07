@@ -281,6 +281,7 @@ export class Player {
     constructor() {
         this.instrument = "piano";
         this.synth = null;
+        this.synths = new Map();
         this.activeNotes = [];
         this.started = false;
         this.pianoLoaded = null;
@@ -290,9 +291,7 @@ export class Player {
         await Tone.start();
         this.started = true;
 
-        if (!this.synth) {
-            this.synth = createInstrument(this.instrument);
-        }
+        this.#ensureInstrument(this.instrument);
 
         if (this.instrument === "piano") {
             await Tone.loaded();
@@ -309,10 +308,20 @@ export class Player {
         }
 
         this.releaseAll();
-        this.synth?.dispose();
 
         this.instrument = id;
-        this.synth = this.started ? createInstrument(id) : null;
+        this.synth = this.started ? this.#ensureInstrument(id) : null;
+    }
+
+    #ensureInstrument(id) {
+        let synth = this.synths.get(id);
+
+        if (!synth) {
+            synth = createInstrument(id);
+            this.synths.set(id, synth);
+        }
+
+        return synth;
     }
 
     playNotes(midiNotes) {
@@ -321,7 +330,7 @@ export class Player {
         }
 
         if (!this.synth) {
-            this.synth = createInstrument(this.instrument);
+            this.synth = this.#ensureInstrument(this.instrument);
         }
 
         const notes = midiNotes.map(midiToNote);
