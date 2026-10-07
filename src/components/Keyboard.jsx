@@ -12,7 +12,7 @@ const BLACK_KEYS = ALL_KEYS
         left: ((WHITE_KEYS.indexOf(m - 1) + 1) / WHITE_KEYS.length) * 100 - BLACK_WIDTH / 2,
     }));
 
-export default function Keyboard({ midi, roots, onPlayNote }) {
+export default function Keyboard({ midi, roots, onPlayNote, onReleaseNote }) {
     const sounding = new Set(midi);
     const rootSet = new Set(roots);
 
@@ -28,7 +28,9 @@ export default function Keyboard({ midi, roots, onPlayNote }) {
                     key={m}
                     type="button"
                     className={keyClass(m, "white")}
-                    onPointerDown={() => onPlayNote?.(m)}
+                    onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); onPlayNote?.(m); }}
+                    onPointerUp={() => onReleaseNote?.(m)}
+                    onPointerCancel={() => onReleaseNote?.(m)}
                     aria-label={"Нота " + NOTE_NAMES[m % 12]}
                 >
                     {m % 12 === 0 && <span className="key-c">до</span>}
@@ -41,7 +43,9 @@ export default function Keyboard({ midi, roots, onPlayNote }) {
                     type="button"
                     className={keyClass(m, "black")}
                     style={{ left: left + "%", width: BLACK_WIDTH + "%" }}
-                    onPointerDown={() => onPlayNote?.(m)}
+                    onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); onPlayNote?.(m); }}
+                    onPointerUp={() => onReleaseNote?.(m)}
+                    onPointerCancel={() => onReleaseNote?.(m)}
                     aria-label={"Нота " + NOTE_NAMES[m % 12]}
                 />
             ))}
