@@ -12,7 +12,7 @@ export const SWAP_HANDS = false;
 export const STABLE_FRAMES = 4;
 
 export const KEY_FROM = 57;
-export const KEY_TO = 79;
+export const KEY_TO = 80;
 export const BLACK_PITCHES = [1, 3, 6, 8, 10];
 
 export const LEFT_HAND_NOTES = [
