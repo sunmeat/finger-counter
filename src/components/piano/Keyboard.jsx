@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { NOTE_NAMES } from "../../domain/piano.js";
 import { BLACK_PITCHES, KEY_FROM, KEY_TO } from "../../domain/constants.js";
 import "../styles/Keyboard.css";
@@ -15,51 +15,90 @@ const BLACK_KEYS = ALL_KEYS.filter((m) => BLACK_PITCHES.includes(m % 12)).map((m
 
 export default function Keyboard({ midi, roots, keyboardMidi = [], previewMidi = [], previewTone = null, onPlayNote, onReleaseNote }) {
     const pointerRef = useRef({ id: null, midi: null });
+    const [pointerMidi, setPointerMidi] = useState(null);
 
-    const releasePointerNote = () => {
+    const releasePointerNote = (pointerId = null) => {
         const active = pointerRef.current;
-        if (active.midi != null) onReleaseNote?.(active.midi);
+
+        if (pointerId != null && active.id !== pointerId) return;
+
+        if (active.midi != null) {
+            onReleaseNote?.(active.midi);
+        }
+
         pointerRef.current = { id: null, midi: null };
+        setPointerMidi(null);
     };
 
     const playPointerNote = (event, nextMidi) => {
-        if (pointerRef.current.midi === nextMidi && pointerRef.current.id === event.pointerId) return;
+        if (pointerRef.current.id === event.pointerId && pointerRef.current.midi === nextMidi) return;
 
         if (pointerRef.current.midi != null) {
             onReleaseNote?.(pointerRef.current.midi);
         }
 
         pointerRef.current = { id: event.pointerId, midi: nextMidi };
+        setPointerMidi(nextMidi);
         onPlayNote?.(nextMidi);
     };
 
     const sounding = new Set(midi);
-    const pressed = new Set(keyboardMidi);
+    const pressed = new Set([...keyboardMidi, pointerMidi]);
     const rootSet = new Set(roots);
     const previewSet = new Set(previewMidi);
     const keyClass = (m, base) => `key ${base}${pressed.has(m) ? " pressed" : previewSet.has(m) ? ` preview-${previewTone}` : rootSet.has(m) ? " root" : sounding.has(m) ? " tone" : ""}`;
     const names = midi.map((m) => NOTE_NAMES[m % 12]).join(", ");
 
+    const handlePointerMove = (event) => {
+        const active = pointerRef.current;
+        if (active.id !== event.pointerId || !(event.buttons & 1)) return;
+
+        const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("button[data-midi]");
+        if (!target || !event.currentTarget.contains(target)) {
+            releasePointerNote(event.pointerId);
+            return;
+        }
+
+        const nextMidi = Number(target.dataset.midi);
+        if (Number.isInteger(nextMidi)) {
+            playPointerNote(event, nextMidi);
+        }
+    };
+
+    const handlePointerUp = (event) => releasePointerNote(event.pointerId);
+
     return (
-        <div className="keys" role="img" aria-label={midi.length ? `Нажаты клавиши: ${names}` : "Клавиши не нажаты"}>
+        <div
+            className="keys"
+            role="img"
+            aria-label={midi.length ? `Нажаты клавиши: ${names}` : "Клавиши не нажаты"}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onPointerLeave={(event) => {
+                if (event.buttons & 1) releasePointerNote(event.pointerId);
+            }}
+        >
             {WHITE_KEYS.map((m) => (
-                <button key={m} type="button" className={keyClass(m, "white")}
+                <button
+                    key={m}
+                    type="button"
+                    data-midi={m}
+                    className={keyClass(m, "white")}
                     onPointerDown={(event) => playPointerNote(event, m)}
-                    onPointerEnter={(event) => { if (event.buttons & 1) playPointerNote(event, m); }}
-                    onPointerUp={(event) => { if (pointerRef.current.id === event.pointerId) releasePointerNote(); }}
-                    onPointerLeave={(event) => { if (event.buttons & 1 && pointerRef.current.id === event.pointerId) onReleaseNote?.(m); }}
-                    onPointerCancel={(event) => { if (pointerRef.current.id === event.pointerId) releasePointerNote(); }}
-                    aria-label={"Нота " + NOTE_NAMES[m % 12]} />
+                    aria-label={"Нота " + NOTE_NAMES[m % 12]}
+                />
             ))}
             {BLACK_KEYS.map(({ m, left }) => (
-                <button key={m} type="button" className={keyClass(m, "black")}
+                <button
+                    key={m}
+                    type="button"
+                    data-midi={m}
+                    className={keyClass(m, "black")}
                     style={{ left: left + "%", width: BLACK_WIDTH + "%" }}
                     onPointerDown={(event) => playPointerNote(event, m)}
-                    onPointerEnter={(event) => { if (event.buttons & 1) playPointerNote(event, m); }}
-                    onPointerUp={(event) => { if (pointerRef.current.id === event.pointerId) releasePointerNote(); }}
-                    onPointerLeave={(event) => { if (event.buttons & 1 && pointerRef.current.id === event.pointerId) onReleaseNote?.(m); }}
-                    onPointerCancel={(event) => { if (pointerRef.current.id === event.pointerId) releasePointerNote(); }}
-                    aria-label={"Нота " + NOTE_NAMES[m % 12]} />
+                    aria-label={"Нота " + NOTE_NAMES[m % 12]}
+                />
             ))}
         </div>
     );
