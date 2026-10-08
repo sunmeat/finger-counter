@@ -1,4 +1,4 @@
-import { NOTE_NAMES } from "../../piano.js";
+import { NOTE_NAMES } from "../../domain/piano.js";
 import "./styles/CurrentSound.css";
 
 export default function CurrentSound({ result, soundOn, noteSide }) {
