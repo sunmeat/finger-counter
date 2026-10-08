@@ -1,6 +1,6 @@
-import { CHORD_GESTURES, NOTE_NAMES } from "../piano.js";
-import { HANDEDNESS, LEFT_HAND_NOTES } from "../constants.js";
-import { rolesFor } from "../handRoles.js";
+import { CHORD_GESTURES, NOTE_NAMES } from "../domain/piano.js";
+import { HANDEDNESS, LEFT_HAND_NOTES } from "../domain/constants.js";
+import { rolesFor } from "../domain/handRoles.js";
 import AppHeader from "./layout/AppHeader.jsx";
 import HandPanel from "./hand/HandPanel.jsx";
 import VideoStage from "./stage/VideoStage.jsx";
