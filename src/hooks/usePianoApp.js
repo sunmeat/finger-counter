@@ -51,6 +51,12 @@ export function usePianoApp() {
         playerRef.current.playKeyboardNote(midi);
     }, [soundOn]);
 
+    const playPreview = useCallback(async (midi) => {
+        if (!soundOn || !midi.length) return;
+        if (!playerRef.current.ready) await playerRef.current.start();
+        playerRef.current.previewNotes(midi);
+    }, [soundOn]);
+
     const releaseKeyboardNote = useCallback((midi) => {
         playerRef.current.releaseKeyboardNote(midi);
     }, []);
@@ -75,7 +81,7 @@ export function usePianoApp() {
         onEnableSound: enableSound,
         instrument, onPickInstrument: pickInstrument,
         dominant, onPickDominant: setDominant,
-        keyboardMidi, onPlayKeyboardNote: playKeyboardNote,
+        keyboardMidi, onPlayKeyboardNote: playKeyboardNote, onPlayPreview: playPreview,
         onReleaseKeyboardNote: releaseKeyboardNote,
     };
 }
