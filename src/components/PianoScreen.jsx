@@ -53,7 +53,7 @@ export default function PianoScreen(props) {
 
         const timer = window.setTimeout(() => {
             setPreview({ midi: [], tone: null });
-        }, 2000);
+        }, 800);
 
         return () => window.clearTimeout(timer);
     }, [preview]);
