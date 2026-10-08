@@ -186,8 +186,10 @@ export default function useHandTracking({
 
                         if (res.landmarks.length > 0) {
                             const handedness = res.handedness ?? res.handednesses ?? [];
+                            const worldLandmarks = res.worldLandmarks ?? [];
+
                             const hands = res.landmarks.map((lm, i) => ({
-                                ...countFingers(lm),
+                                ...countFingers(worldLandmarks[i] ?? lm),
                                 side: sideFromLabel(
                                     handedness[i]?.[0]?.categoryName,
                                     SWAP_HANDS
