@@ -62,7 +62,6 @@ export const CHORD_GESTURES = [
     { fingers: [1, 2, 4], mask: 11, name: "augmented", intervals: [0, 4, 8] },
     { fingers: [2, 3], mask: 6, name: "6", intervals: [0, 4, 7, 9] },
     { fingers: [2, 4], mask: 10, name: "m6", intervals: [0, 3, 7, 9] },
-    { fingers: [1, 3, 5], mask: 21, name: "m7", intervals: [0, 3, 7, 10] },
     { fingers: [1, 3, 4], mask: 13, name: "7sus4", intervals: [0, 5, 7, 10] },
     { fingers: [2, 3, 5], mask: 22, name: "m7♭5", intervals: [0, 3, 6, 10] },
     { fingers: [1, 2, 3, 5], mask: 23, name: "9", intervals: [0, 4, 7, 10, 14] },
