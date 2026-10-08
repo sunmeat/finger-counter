@@ -1,12 +1,9 @@
 import React from "react";
-import { Analytics } from "@vercel/analytics/react";
 import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
-import "./styles.css";
+import App from "./app/App.jsx";
 
 createRoot(document.getElementById("root")).render(
-    <>
+    <React.StrictMode>
         <App />
-        <Analytics />
-    </>
+    </React.StrictMode>
 );
