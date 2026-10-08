@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CHORD_GESTURES, getNoteByFingers, NOTE_COMBINATIONS } from "../domain/piano.js";
 import { rolesFor } from "../domain/handRoles.js";
 import AppHeader from "./layout/AppHeader.jsx";
@@ -47,6 +47,16 @@ function panelFor(side, noteSide, noteHand, chordHand, noteRows, chordRows, onRo
 export default function PianoScreen(props) {
     const { result, dominant, onPlayPreview } = props;
     const [preview, setPreview] = useState({ midi: [], tone: null });
+
+    useEffect(() => {
+        if (!preview.midi.length) return;
+
+        const timer = window.setTimeout(() => {
+            setPreview({ midi: [], tone: null });
+        }, 2000);
+
+        return () => window.clearTimeout(timer);
+    }, [preview]);
     const { noteSide, chordSide } = rolesFor(dominant);
     const noteHand = result?.hands.find((h) => h.side === noteSide);
     const chordHand = result?.hands.find((h) => h.side === chordSide);
