@@ -1,6 +1,6 @@
 import { NOTE_NAMES } from "../../domain/piano.js";
 import { BLACK_PITCHES, KEY_FROM, KEY_TO } from "../../domain/constants.js";
-import "./styles/Keyboard.css";
+import "../styles/Keyboard.css";
 
 const ALL_KEYS = Array.from({ length: KEY_TO - KEY_FROM + 1 }, (_, i) => KEY_FROM + i);
 const WHITE_KEYS = ALL_KEYS.filter((m) => !BLACK_PITCHES.includes(m % 12));
