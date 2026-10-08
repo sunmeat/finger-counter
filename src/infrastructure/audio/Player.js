@@ -303,6 +303,20 @@ export class Player {
         this.activeNotes = notes;
     }
 
+    previewNotes(midiNotes) {
+        if (!this.ready || !midiNotes.length) {
+            return;
+        }
+
+        if (!this.synth) {
+            this.synth = this.#ensureInstrument(this.instrument);
+        }
+
+        const notes = midiNotes.map(midiToNote);
+        const velocity = Math.min(0.82, 0.95 / Math.sqrt(notes.length));
+        this.synth.triggerAttackRelease(notes, 0.8, undefined, velocity);
+    }
+
     playKeyboardNote(midi) {
         if (!this.ready) {
             return;
