@@ -1,5 +1,5 @@
-import { NOTE_NAMES } from "../../piano.js";
-import { BLACK_PITCHES, KEY_FROM, KEY_TO } from "../../constants.js";
+import { NOTE_NAMES } from "../../domain/piano.js";
+import { BLACK_PITCHES, KEY_FROM, KEY_TO } from "../../domain/constants.js";
 import "./styles/Keyboard.css";
 
 const ALL_KEYS = Array.from({ length: KEY_TO - KEY_FROM + 1 }, (_, i) => KEY_FROM + i);
