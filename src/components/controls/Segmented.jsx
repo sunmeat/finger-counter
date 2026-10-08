@@ -1,4 +1,4 @@
-import "./styles/Segmented.css";
+import "../styles/Segmented.css";
 
 export default function Segmented({ label, options, value, onChange }) {
     return (
