@@ -108,3 +108,21 @@
     .key.black { top: 5px; height: 57%; }
 }
 @media (prefers-reduced-motion: reduce) { .key { transition: none; } }
+
+
+.key.preview-note.white {
+    background: linear-gradient(180deg, #fff8dc 0%, #f4d77b 68%, #d4ad4f 100%);
+    box-shadow: inset 0 3px 5px rgba(120,92,20,.12), inset 0 -2px 0 rgba(255,255,255,.3), 0 0 12px rgba(235,193,75,.28);
+}
+.key.preview-note.black {
+    background: linear-gradient(180deg, #6f6546 0%, #302a1c 52%, #0b0a06 100%);
+    box-shadow: inset 0 3px 4px rgba(255,255,255,.08), 0 0 10px rgba(235,193,75,.24);
+}
+.key.preview-chord.white {
+    background: linear-gradient(180deg, #e9fbff 0%, #83cfe0 68%, #4a9fb2 100%);
+    box-shadow: inset 0 3px 5px rgba(20,100,120,.12), inset 0 -2px 0 rgba(255,255,255,.3), 0 0 12px rgba(82,190,216,.26);
+}
+.key.preview-chord.black {
+    background: linear-gradient(180deg, #4f727a 0%, #203b42 52%, #071013 100%);
+    box-shadow: inset 0 3px 4px rgba(255,255,255,.08), 0 0 10px rgba(82,190,216,.22);
+}
