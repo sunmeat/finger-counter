@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-vision";
-import { countFingers } from "./countFingers.js";
-import { planSound } from "./piano.js";
-import { MODEL_URL, STABLE_FRAMES, SWAP_HANDS, WASM_URL } from "./constants.js";
-import { fixSides, rolesFor, sideFromLabel } from "./handRoles.js";
+import { countFingers } from "./domain/fingerCounter.js";
+import { planSound } from "./domain/piano.js";
+import { MODEL_URL, STABLE_FRAMES, SWAP_HANDS, WASM_URL } from "./domain/constants.js";
+import { fixSides, rolesFor, sideFromLabel } from "./domain/handRoles.js";
 
 function drawHand(drawing, landmarks, color, ink) {
     drawing.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, {
