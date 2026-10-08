@@ -1,0 +1,1 @@
+.head{grid-area:head;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px}.title{margin:0;font-family:var(--serif);font-size:clamp(1.7rem,3.2vw,2.4rem);font-weight:700;line-height:1.1;letter-spacing:-.01em}.lede{margin:6px 0 0;color:var(--muted)}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
