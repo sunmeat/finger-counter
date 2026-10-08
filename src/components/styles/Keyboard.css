@@ -1,12 +1,12 @@
 .keys {
     --keybed-inset: 12px;
-    --white-count: 16;
+    --white-count: 17;
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--white-count), minmax(0, 1fr));
     width: 100%;
     height: clamp(96px, 12vw, 132px);
-    padding: 8px var(--keybed-inset) 9px;
+    padding: 8px 4% 9px;
     justify-self: center;
     overflow: hidden;
     border: 1px solid rgba(0, 0, 0, .9);
@@ -82,7 +82,7 @@
     border-radius: 999px;
     background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.025));
 }
-.key.white:hover { filter: brightness(1.025); transform: translateY(-1px); }
+.key.root.white, .key.tone.white {\n    background: linear-gradient(90deg, rgba(255,255,255,.38), transparent 12%, transparent 88%, rgba(60,50,35,.08)), linear-gradient(180deg, color-mix(in srgb, var(--note) 22%, white) 0%, color-mix(in srgb, var(--note) 36%, #eee9df) 70%, color-mix(in srgb, var(--note) 45%, #cfc5b5) 100%);\n}\n.key.root.black, .key.tone.black {\n    background: linear-gradient(90deg, rgba(255,255,255,.12), transparent 17%, transparent 78%, rgba(0,0,0,.25)), linear-gradient(180deg, color-mix(in srgb, var(--note) 38%, #333) 0%, #111 55%, #050505 100%);\n}\n.key.white:hover { filter: brightness(1.025); transform: translateY(-1px); }
 .key.black:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .key.white:active, .key.pressed.white {
     transform: translateY(3px) scaleY(.985);
@@ -104,7 +104,7 @@
 }
 .key:focus-visible { outline: 2px solid rgba(255,255,255,.72); outline-offset: -3px; }
 @media (max-width: 700px) {
-    .keys { --keybed-inset: 7px; height: clamp(86px, 22vw, 112px); padding-top: 6px; }
+    .keys { height: clamp(86px, 22vw, 112px); padding-top: 6px; }
     .key.black { top: 5px; height: 57%; }
 }
 @media (prefers-reduced-motion: reduce) { .key { transition: none; } }
