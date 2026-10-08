@@ -1,4 +1,4 @@
-import "./styles/InstrumentSelect.css";
+import "../styles/InstrumentSelect.css";
 
 export default function InstrumentSelect({ options, value, onChange }) {
     return (
