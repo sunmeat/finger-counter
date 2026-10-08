@@ -1,5 +1,5 @@
-import { INSTRUMENTS } from "../../piano.js";
-import { HANDEDNESS } from "../../constants.js";
+import { INSTRUMENTS } from "../../infrastructure/audio/Player.js";
+import { HANDEDNESS } from "../../domain/constants.js";
 import InstrumentSelect from "../controls/InstrumentSelect.jsx";
 import Segmented from "../controls/Segmented.jsx";
 import SoundButton from "../controls/SoundButton.jsx";
