@@ -119,3 +119,26 @@ export function planSound(noteFingers, chordFingers) {
         label: `${note.name} ${chord.name}`.trim(),
     };
 }
+
+// ---------- Инструменты ----------
+
+export const INSTRUMENTS = [
+    { id: "piano", name: "Acoustic Piano" },
+    { id: "electric", name: "Electric Piano" },
+    { id: "wavetable", name: "Wavetable Synth" },
+    { id: "strings", name: "String Ensemble" },
+    { id: "celesta", name: "Celesta" },
+    { id: "marimba", name: "Marimba" },
+    { id: "nylon", name: "Nylon Pluck" },
+    { id: "accordion", name: "Accordion" },
+    { id: "vibraphone", name: "Vibraphone" },
+    { id: "soft-pad", name: "Soft Pad" },
+    { id: "analog-lead", name: "Analog Lead" },
+    { id: "retro-synth", name: "Retro Synth" },
+    { id: "brass", name: "Synth Brass" },
+    { id: "flute", name: "Flute" },
+    { id: "choir", name: "Choir Pad" },
+    { id: "digital-piano", name: "Digital Piano" },
+    { id: "clavinet", name: "Clavinet" },
+    { id: "deep-bass", name: "Deep Bass" },
+];
