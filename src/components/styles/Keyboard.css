@@ -1,6 +1,6 @@
 .keys {
     --keybed-inset: 12px;
-    --white-count: 17;
+    --white-count: 18;
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--white-count), minmax(0, 1fr));
