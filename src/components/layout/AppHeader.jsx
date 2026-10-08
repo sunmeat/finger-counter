@@ -3,7 +3,7 @@ import { HANDEDNESS } from "../../domain/constants.js";
 import InstrumentSelect from "../controls/InstrumentSelect.jsx";
 import Segmented from "../controls/Segmented.jsx";
 import SoundButton from "../controls/SoundButton.jsx";
-import "./styles/AppHeader.css";
+import "../styles/AppHeader.css";
 
 export default function AppHeader(props) {
     const { lede, instrument, onPickInstrument, dominant, onPickDominant, soundOn, onEnableSound } = props;
