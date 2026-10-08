@@ -19,20 +19,14 @@ export function usePianoApp() {
     const onResult = useCallback((value) => setResult(value), []);
     const onStatus = useCallback((value) => setStatus(value), []);
 
-    const toggleSound = useCallback(async () => {
-        if (soundOn) {
-            playerRef.current.releaseAll();
-            playerRef.current.releaseKeyboardNotes();
-            setSoundOn(false);
-            return;
-        }
+    const enableSound = useCallback(async () => {
         try {
             await playerRef.current.start();
             setSoundOn(true);
         } catch (error) {
             console.error("Не удалось включить звук:", error);
         }
-    }, [soundOn]);
+    }, []);
 
     useEffect(() => {
         const unlockAudio = () => {
@@ -79,7 +73,7 @@ export function usePianoApp() {
 
     return {
         videoRef, canvasRef, result, status, soundOn,
-        onEnableSound: toggleSound,
+        onEnableSound: enableSound,
         instrument, onPickInstrument: pickInstrument,
         dominant, onPickDominant: setDominant,
         keyboardMidi, onPlayKeyboardNote: playKeyboardNote,
