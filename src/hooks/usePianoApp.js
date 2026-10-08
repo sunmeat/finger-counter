@@ -15,9 +15,15 @@ export function usePianoApp() {
     const [soundOn, setSoundOn] = useState(false);
     const [instrument, setInstrument] = useState("piano");
     const [dominant, setDominant] = useState("right");
+    const [retryToken, setRetryToken] = useState(0);
 
     const onResult = useCallback((value) => setResult(value), []);
     const onStatus = useCallback((value) => setStatus(value), []);
+    const onRetry = useCallback(() => {
+        setResult(null);
+        setStatus("Повторная инициализация…");
+        setRetryToken((value) => value + 1);
+    }, []);
 
     const enableSound = useCallback(async () => {
         try {
@@ -74,6 +80,7 @@ export function usePianoApp() {
         player: playerRef.current,
         onResult,
         onStatus,
+        retryToken,
     });
 
     return {
@@ -83,5 +90,6 @@ export function usePianoApp() {
         dominant, onPickDominant: setDominant,
         keyboardMidi, onPlayKeyboardNote: playKeyboardNote, onPlayPreview: playPreview,
         onReleaseKeyboardNote: releaseKeyboardNote,
+        onRetry,
     };
 }
