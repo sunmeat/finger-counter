@@ -1,4 +1,4 @@
-import "./styles/HandPanel.css";
+import "../styles/HandPanel.css";
 
 export default function HandPanel({ side, tone, title, role, seen, rows, note }) {
     return (
