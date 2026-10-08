@@ -44,6 +44,29 @@ export default function useHandTracking({
         let pendingFrames = 0;
         let playingKey = "";
 
+        function stopStream() {
+            stream?.getTracks().forEach((track) => track.stop());
+            stream = undefined;
+        }
+
+        function closeLandmarker() {
+            landmarker?.close();
+            landmarker = undefined;
+        }
+
+        function cleanupResources() {
+            cancelAnimationFrame(rafId);
+            stopStream();
+            closeLandmarker();
+
+            const video = videoRef.current;
+            if (video?.srcObject === stream) {
+                video.srcObject = null;
+            }
+
+            player.releaseAll();
+        }
+
         function updateSound(plan) {
             if (plan.key === pendingKey) {
                 pendingFrames++;
@@ -70,6 +93,8 @@ export default function useHandTracking({
             try {
                 const vision = await FilesetResolver.forVisionTasks(WASM_URL);
 
+                if (cancelled) return;
+
                 landmarker = await HandLandmarker.createFromOptions(vision, {
                     baseOptions: {
                         modelAssetPath: MODEL_URL,
@@ -79,6 +104,11 @@ export default function useHandTracking({
                     numHands: 2,
                 });
 
+                if (cancelled) {
+                    closeLandmarker();
+                    return;
+                }
+
                 onStatus("Запрашиваю доступ к камере…");
 
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -86,11 +116,22 @@ export default function useHandTracking({
                     audio: false,
                 });
 
-                if (cancelled) return;
+                if (cancelled) {
+                    stopStream();
+                    closeLandmarker();
+                    return;
+                }
 
                 const video = videoRef.current;
                 video.srcObject = stream;
                 await video.play();
+
+                if (cancelled) {
+                    stopStream();
+                    closeLandmarker();
+                    video.srcObject = null;
+                    return;
+                }
 
                 onStatus("Покажите руки в камеру");
 
@@ -189,6 +230,8 @@ export default function useHandTracking({
 
                 loop();
             } catch (e) {
+                if (cancelled) return;
+
                 console.error(e);
                 onStatus(`Ошибка: ${e.message || e}`);
             }
@@ -198,10 +241,7 @@ export default function useHandTracking({
 
         return () => {
             cancelled = true;
-            cancelAnimationFrame(rafId);
-            stream?.getTracks().forEach((track) => track.stop());
-            landmarker?.close();
-            player.releaseAll();
+            cleanupResources();
         };
     }, [videoRef, canvasRef, player, onResult, onStatus]);
 }
