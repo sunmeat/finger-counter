@@ -3,7 +3,6 @@ import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-
 import { countFingers } from "../../domain/fingerCounter.js";
 import { planSound } from "../../domain/piano.js";
 import { MODEL_URL, STABLE_FRAMES, SWAP_HANDS, WASM_URL } from "../../domain/constants.js";
-import { fixSides, rolesFor, sideFromLabel } from "../../domain/handRoles.js";
 
 function drawHand(drawing, landmarks, color, ink) {
     drawing.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, {
@@ -17,6 +16,30 @@ function drawHand(drawing, landmarks, color, ink) {
         lineWidth: 1.5,
         radius: 4,
     });
+}
+
+function sideFromLabel(label, swapHands = false) {
+    if (label !== "Left" && label !== "Right") {
+        return null;
+    }
+
+    const isRight = (label === "Right") !== swapHands;
+    return isRight ? "right" : "left";
+}
+
+function fixSides(hands) {
+    if (hands.length === 2 && hands[0].side === hands[1].side) {
+        const rightIdx = hands[0].wristX < hands[1].wristX ? 0 : 1;
+        hands[rightIdx].side = "right";
+        hands[1 - rightIdx].side = "left";
+    }
+}
+
+function rolesFor(dominant) {
+    const noteSide = dominant === "right" ? "left" : "right";
+    const chordSide = noteSide === "left" ? "right" : "left";
+
+    return { noteSide, chordSide };
 }
 
 export default function useHandTracking({
@@ -44,6 +67,10 @@ export default function useHandTracking({
         let pendingKey = null;
         let pendingFrames = 0;
         let playingKey = "";
+
+        const handHistory = new Map();
+        const HISTORY_SIZE = 6;
+        const STABLE_FRAMES = 4;
 
         function stopStream() {
             stream?.getTracks().forEach((track) => track.stop());
@@ -89,6 +116,28 @@ export default function useHandTracking({
                     }
                 }
             }
+        }
+
+        function smoothHand(side, fingers) {
+            if (!side) return fingers;
+
+            const history = handHistory.get(side) ?? [];
+            history.push(fingers.map(Boolean));
+
+            if (history.length > HISTORY_SIZE) {
+                history.shift();
+            }
+
+            handHistory.set(side, history);
+
+            return fingers.map((_, index) => {
+                const ones = history.filter((frame) => frame[index]).length;
+                return ones >= Math.ceil(history.length / 2);
+            });
+        }
+
+        function resetHandHistory() {
+            handHistory.clear();
         }
 
         async function createLandmarker(vision) {
@@ -185,7 +234,7 @@ export default function useHandTracking({
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                         if (res.landmarks.length > 0) {
-                            const handedness = res.handedness ?? res.handednesses ?? [];
+                            const handedness = res.handedness ?? [];
                             const worldLandmarks = res.worldLandmarks ?? [];
 
                             const hands = res.landmarks.map((lm, i) => ({
@@ -199,9 +248,24 @@ export default function useHandTracking({
 
                             fixSides(hands);
 
+                            const activeSides = new Set(hands.map((hand) => hand.side));
+                            for (const side of handHistory.keys()) {
+                                if (!activeSides.has(side)) {
+                                    handHistory.delete(side);
+                                }
+                            }
+
                             const { noteSide, chordSide } = rolesFor(dominantRef.current);
 
-                            hands.forEach((h, i) => {
+                            const smoothedHands = hands.map((hand) => ({
+                                ...hand,
+                                fingers: smoothHand(hand.side, hand.fingers),
+                            })).map((hand) => ({
+                                ...hand,
+                                count: hand.fingers.filter(Boolean).length,
+                            }));
+
+                            smoothedHands.forEach((h, i) => {
                                 const color =
                                     h.side === noteSide
                                         ? colors.note
@@ -212,30 +276,33 @@ export default function useHandTracking({
                                 drawHand(drawing, res.landmarks[i], color, colors.ink);
                             });
 
-                            const noteHand = hands.find((h) => h.side === noteSide);
-                            const chordHand = hands.find((h) => h.side === chordSide);
+                            const noteHand = smoothedHands.find((h) => h.side === noteSide);
+                            const chordHand = smoothedHands.find((h) => h.side === chordSide);
                             const plan = planSound(noteHand?.fingers, chordHand?.fingers);
 
                             updateSound(plan);
 
                             const uiKey =
-                                dominant +
+                                dominantRef.current +
                                 "|" +
-                                hands
+                                smoothedHands
                                     .map((h) => h.side + h.fingers.map(Number).join(""))
+                                    .sort()
                                     .join("|");
 
                             if (uiKey !== lastUiKey) {
                                 lastUiKey = uiKey;
                                 onResult({
-                                    count: hands.reduce((sum, h) => sum + h.count, 0),
-                                    hands,
+                                    count: smoothedHands.reduce((sum, h) => sum + h.count, 0),
+                                    hands: smoothedHands,
                                     chord: plan.label,
                                     midi: plan.midi,
                                     roots: plan.roots,
                                 });
                             }
                         } else {
+                            resetHandHistory();
+
                             updateSound({
                                 key: "",
                                 midi: [],
