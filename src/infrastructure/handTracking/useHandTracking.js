@@ -26,6 +26,7 @@ export default function useHandTracking({
     player,
     onResult,
     onStatus,
+    retryToken,
 }) {
     const dominantRef = useRef(dominant);
 
@@ -90,13 +91,9 @@ export default function useHandTracking({
             }
         }
 
-        async function init() {
+        async function createLandmarker(vision) {
             try {
-                const vision = await FilesetResolver.forVisionTasks(WASM_URL);
-
-                if (cancelled) return;
-
-                landmarker = await HandLandmarker.createFromOptions(vision, {
+                return await HandLandmarker.createFromOptions(vision, {
                     baseOptions: {
                         modelAssetPath: MODEL_URL,
                         delegate: "GPU",
@@ -104,11 +101,36 @@ export default function useHandTracking({
                     runningMode: "VIDEO",
                     numHands: 2,
                 });
+            } catch (gpuError) {
+                if (cancelled) return null;
+
+                console.warn("GPU недоступен, переключаюсь на CPU:", gpuError);
+
+                return HandLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: MODEL_URL,
+                        delegate: "CPU",
+                    },
+                    runningMode: "VIDEO",
+                    numHands: 2,
+                });
+            }
+        }
+
+        async function init() {
+            try {
+                const vision = await FilesetResolver.forVisionTasks(WASM_URL);
+
+                if (cancelled) return;
+
+                landmarker = await createLandmarker(vision);
 
                 if (cancelled) {
                     closeLandmarker();
                     return;
                 }
+
+                if (!landmarker) return;
 
                 onStatus("Запрашиваю доступ к камере…");
 
@@ -234,7 +256,16 @@ export default function useHandTracking({
                 if (cancelled) return;
 
                 console.error(e);
-                onStatus(`Ошибка: ${e.message || e}`);
+
+                if (e?.name === "NotAllowedError") {
+                    onStatus("Доступ к камере запрещён. Разрешите камеру в настройках браузера и нажмите «Повторить».");
+                } else if (e?.name === "NotFoundError") {
+                    onStatus("Камера не найдена. Подключите камеру и нажмите «Повторить».");
+                } else if (e?.name === "NotReadableError") {
+                    onStatus("Камера занята другим приложением. Закройте его и нажмите «Повторить».");
+                } else {
+                    onStatus("Не удалось запустить камеру или модель. Нажмите «Повторить».");
+                }
             }
         }
 
@@ -244,5 +275,5 @@ export default function useHandTracking({
             cancelled = true;
             cleanupResources();
         };
-    }, [videoRef, canvasRef, player, onResult, onStatus]);
+    }, [videoRef, canvasRef, player, onResult, onStatus, retryToken]);
 }
