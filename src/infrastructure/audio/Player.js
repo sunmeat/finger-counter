@@ -40,7 +40,7 @@ function createAcousticPiano() {
             C5: "C5.mp3", A5: "A5.mp3", C6: "C6.mp3", A6: "A6.mp3", C7: "C7.mp3",
         },
         baseUrl: PIANO_BASE_URL,
-        release: 2.2,
+        release: 0.75,
         volume: -6,
     }).toDestination();
 }
