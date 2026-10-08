@@ -1,0 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500..700&family=Onest:wght@400..600&display=swap");
+:root{--bg:#121c26;--panel:#192531;--line:#2a3a49;--text:#ebe6da;--muted:#93a3b0;--ink:#101a23;--ebony:#0b1117;--note:#f0b44c;--chord:#62cbd9;--serif:"Literata",Georgia,"Times New Roman",serif;--sans:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.45}
+.app{display:grid;grid-template-columns:minmax(210px,1fr) minmax(0,640px) minmax(210px,1fr);grid-template-areas:"head head head" "left stage right";gap:24px 28px;align-items:start;max-width:1360px;margin:0 auto;padding:clamp(16px,3vw,36px)}
+.panel-left{grid-area:left}.panel-right{grid-area:right}.panel.role-note{--hand:var(--note)}.panel.role-chord{--hand:var(--chord)}.center{grid-area:stage;display:grid;gap:18px;width:100%;max-width:640px;justify-self:center}
+@media(max-width:1100px){.app{grid-template-columns:1fr 1fr;grid-template-areas:"head head" "stage stage" "left right"}}
+@media(max-width:600px){.app{grid-template-columns:1fr;grid-template-areas:"head" "stage" "left" "right"}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
