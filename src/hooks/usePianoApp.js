@@ -29,17 +29,16 @@ export function usePianoApp() {
     }, []);
 
     useEffect(() => {
-        const unlockAudio = () => {
-            if (!playerRef.current.ready) void playerRef.current.start();
+        const handleFirstClick = () => {
+            void enableSound();
         };
-        window.addEventListener("pointerdown", unlockAudio, { capture: true, once: true });
-        window.addEventListener("keydown", unlockAudio, { capture: true, once: true });
+
+        window.addEventListener("pointerdown", handleFirstClick, { capture: true, once: true });
 
         return () => {
-            window.removeEventListener("pointerdown", unlockAudio, true);
-            window.removeEventListener("keydown", unlockAudio, true);
+            window.removeEventListener("pointerdown", handleFirstClick, true);
         };
-    }, []);
+    }, [enableSound]);
 
     const pickInstrument = useCallback((value) => {
         playerRef.current.setInstrument(value);
