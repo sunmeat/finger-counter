@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Player } from "../piano.js";
-import useHandTracking from "../useHandTracking.js";
+import { Player } from "../infrastructure/audio/Player.js";
+import useHandTracking from "../infrastructure/handTracking/useHandTracking.js";
 import { useKeyboardPiano } from "./useKeyboardPiano.js";
 
 export function usePianoApp() {
