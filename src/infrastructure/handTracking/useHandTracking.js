@@ -56,14 +56,15 @@ export default function useHandTracking({
 
         function cleanupResources() {
             cancelAnimationFrame(rafId);
-            stopStream();
-            closeLandmarker();
 
             const video = videoRef.current;
-            if (video?.srcObject === stream) {
+            if (video) {
+                video.pause();
                 video.srcObject = null;
             }
 
+            stopStream();
+            closeLandmarker();
             player.releaseAll();
         }
 
