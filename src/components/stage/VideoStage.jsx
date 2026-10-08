@@ -1,4 +1,4 @@
-import "./styles/VideoStage.css";
+import "../styles/VideoStage.css";
 
 export default function VideoStage({ videoRef, canvasRef, result, status }) {
     return (
