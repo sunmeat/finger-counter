@@ -1,5 +1,4 @@
-import { CHORD_GESTURES, NOTE_NAMES } from "../domain/piano.js";
-import { HANDEDNESS, LEFT_HAND_NOTES } from "../domain/constants.js";
+import { CHORD_GESTURES, getNoteByFingers, NOTE_COMBINATIONS } from "../domain/piano.js";
 import { rolesFor } from "../domain/handRoles.js";
 import AppHeader from "./layout/AppHeader.jsx";
 import HandPanel from "./hand/HandPanel.jsx";
@@ -19,14 +18,16 @@ function chordIsActive(chord, mask) {
 
 function createRows(items, type, mask) {
     return items.map((item) => ({
+        key: type + "-" + item.mask,
         finger: item.fingers.length ? item.fingers.join(" + ") : "Без пальцев",
         value: item.name,
         plain: type === "chord" && item.mask === 0,
         active: type === "chord" ? chordIsActive(item, mask) : item.mask === mask,
+        midi: type === "note" ? [item.midi] : item.intervals,
     }));
 }
 
-function panelFor(side, noteSide, noteHand, chordHand, noteRows, chordRows) {
+function panelFor(side, noteSide, noteHand, chordHand, noteRows, chordRows, onRowClick) {
     const isNote = side === noteSide;
     return {
         side,
@@ -35,6 +36,7 @@ function panelFor(side, noteSide, noteHand, chordHand, noteRows, chordRows) {
         role: isNote ? "Задаёт основную ноту" : "Выбирает аккорд",
         seen: Boolean(isNote ? noteHand : chordHand),
         rows: isNote ? noteRows : chordRows,
+        onRowClick,
         note: isNote
             ? "Каждая комбинация пальцев соответствует одной ноте."
             : "Каждая комбинация пальцев соответствует отдельному аккорду.",
@@ -42,18 +44,29 @@ function panelFor(side, noteSide, noteHand, chordHand, noteRows, chordRows) {
 }
 
 export default function PianoScreen(props) {
-    const { result, dominant } = props;
+    const { result, dominant, onPlayPreview } = props;
     const { noteSide, chordSide } = rolesFor(dominant);
     const noteHand = result?.hands.find((h) => h.side === noteSide);
     const chordHand = result?.hands.find((h) => h.side === chordSide);
-    const noteRows = createRows(LEFT_HAND_NOTES, "note", maskFromFingers(noteHand?.fingers));
-    const chordRows = createRows(CHORD_GESTURES, "chord", maskFromFingers(chordHand?.fingers));
+    const noteMask = maskFromFingers(noteHand?.fingers);
+    const chordMask = maskFromFingers(chordHand?.fingers);
+    const noteRows = createRows(NOTE_COMBINATIONS, "note", noteMask);
+    const chordRows = createRows(CHORD_GESTURES, "chord", chordMask);
+    const currentRoot = getNoteByFingers(noteHand?.fingers)?.midi ?? 60;
+
+    const handleRowClick = (row) => {
+        const midi = row.midi.map((value) =>
+            row.key.startsWith("chord-") ? currentRoot + value : value
+        );
+        onPlayPreview?.(midi);
+    };
+
     const lede = `${noteSide === "left" ? "Левая" : "Правая"} рука задаёт основную ноту, ${chordSide === "left" ? "левая" : "правая"} выбирает аккорд.`;
 
     return (
         <main className="app">
             <AppHeader {...props} lede={lede} />
-            <HandPanel {...panelFor("left", noteSide, noteHand, chordHand, noteRows, chordRows)} />
+            <HandPanel {...panelFor("left", noteSide, noteHand, chordHand, noteRows, chordRows, handleRowClick)} />
             <div className="center">
                 <VideoStage {...props} />
                 <CurrentSound result={result} soundOn={props.soundOn} noteSide={noteSide} />
@@ -65,7 +78,7 @@ export default function PianoScreen(props) {
                     onReleaseNote={props.onReleaseKeyboardNote}
                 />
             </div>
-            <HandPanel {...panelFor("right", noteSide, noteHand, chordHand, noteRows, chordRows)} />
+            <HandPanel {...panelFor("right", noteSide, noteHand, chordHand, noteRows, chordRows, handleRowClick)} />
         </main>
     );
 }
