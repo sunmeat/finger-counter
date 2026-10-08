@@ -12,11 +12,12 @@ const BLACK_KEYS = ALL_KEYS.filter((m) => BLACK_PITCHES.includes(m % 12)).map((m
     left: KEYBED_INSET + ((WHITE_KEYS.indexOf(m - 1) + 1) / WHITE_KEYS.length) * KEYBED_WIDTH - BLACK_WIDTH / 2,
 }));
 
-export default function Keyboard({ midi, roots, keyboardMidi = [], onPlayNote, onReleaseNote }) {
+export default function Keyboard({ midi, roots, keyboardMidi = [], previewMidi = [], previewTone = null, onPlayNote, onReleaseNote }) {
     const sounding = new Set(midi);
     const pressed = new Set(keyboardMidi);
     const rootSet = new Set(roots);
-    const keyClass = (m, base) => `key ${base}${pressed.has(m) ? " pressed" : rootSet.has(m) ? " root" : sounding.has(m) ? " tone" : ""}`;
+    const previewSet = new Set(previewMidi);
+    const keyClass = (m, base) => `key ${base}${pressed.has(m) ? " pressed" : previewSet.has(m) ? ` preview-${previewTone}` : rootSet.has(m) ? " root" : sounding.has(m) ? " tone" : ""}`;
     const names = midi.map((m) => NOTE_NAMES[m % 12]).join(", ");
 
     return (
