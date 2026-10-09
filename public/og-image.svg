@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080d18"/><stop offset=".55" stop-color="#111629"/><stop offset="1" stop-color="#260c35"/></linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#36c8ff"/><stop offset=".52" stop-color="#9b65ff"/><stop offset="1" stop-color="#ff3eaf"/></linearGradient>
+    <linearGradient id="key" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#c9d5e8"/></linearGradient>
+    <radialGradient id="halo"><stop stop-color="#6b36b8" stop-opacity=".36"/><stop offset="1" stop-color="#6b36b8" stop-opacity="0"/></radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="34"/></filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="940" cy="400" r="330" fill="url(#halo)"/>
+  <circle cx="790" cy="470" r="150" fill="#1765ff" opacity=".18" filter="url(#blur)"/>
+  <circle cx="1080" cy="430" r="150" fill="#ff279d" opacity=".16" filter="url(#blur)"/>
+  <g opacity=".14" stroke="#8ea6d6" stroke-width="1"><path d="M0 110H1200M0 190H1200M0 270H1200M0 350H1200M0 430H1200M0 510H1200"/><path d="M100 0V630M200 0V630M300 0V630M400 0V630M500 0V630M600 0V630M700 0V630M800 0V630M900 0V630M1000 0V630M1100 0V630"/></g>
+  <g transform="translate(76 75)">
+    <rect x="0" y="6" width="15" height="48" rx="7" fill="#b74cff"/><rect x="23" y="0" width="15" height="60" rx="7" fill="#8e68ff"/><rect x="46" y="12" width="15" height="42" rx="7" fill="#5d9dff"/><rect x="69" y="20" width="15" height="34" rx="7" fill="#42d7ff"/>
+    <text x="108" y="48" font-family="Arial, Helvetica, sans-serif" font-size="49" font-weight="700" letter-spacing="-1.5" fill="#f7f8ff">Finger Counter</text>
+  </g>
+  <text x="78" y="220" font-family="Arial, Helvetica, sans-serif" font-size="39" font-weight="700" fill="#ffffff">Играй на пианино</text>
+  <text x="78" y="267" font-family="Arial, Helvetica, sans-serif" font-size="39" font-weight="700" fill="#ffffff">жестами рук</text>
+  <text x="80" y="319" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#c9d2e5">Преврати движения пальцев в ноты и аккорды.</text>
+  <text x="80" y="350" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#c9d2e5">Музыкальный инструмент, которым управляешь ты.</text>
+  <g opacity=".36" stroke="url(#glow)" stroke-width="2" fill="none"><path d="M570 258Q660 180 735 238T910 225T1100 210"/><path d="M580 300Q675 230 750 288T920 276T1110 260"/><path d="M600 340Q690 280 770 330T940 320T1120 300"/></g>
+  <g fill="#fff" opacity=".72" font-family="Arial, Helvetica, sans-serif" font-size="15"><text x="710" y="200">C4</text><text x="845" y="246">E4</text><text x="970" y="218">G4</text><text x="1080" y="254">B4</text></g>
+  <g stroke="url(#glow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M680 350L708 300L740 270L768 298L790 345L815 305L840 325"/>
+    <path d="M840 325L865 280L895 260L925 285L950 340L975 300L1000 320L1028 365"/>
+    <path d="M680 350L690 395L715 405L740 365L768 390L790 345"/>
+    <path d="M840 325L850 385L875 400L900 365L925 385L950 340"/>
+    <path d="M1000 320L1010 385L1035 405L1055 365L1078 385L1100 340"/>
+  </g>
+  <g fill="#101a2c" stroke="url(#glow)" stroke-width="3"><circle cx="680" cy="350" r="7"/><circle cx="708" cy="300" r="7"/><circle cx="740" cy="270" r="7"/><circle cx="768" cy="298" r="7"/><circle cx="790" cy="345" r="7"/><circle cx="815" cy="305" r="7"/><circle cx="840" cy="325" r="7"/><circle cx="865" cy="280" r="7"/><circle cx="895" cy="260" r="7"/><circle cx="925" cy="285" r="7"/><circle cx="950" cy="340" r="7"/><circle cx="975" cy="300" r="7"/><circle cx="1000" cy="320" r="7"/><circle cx="1028" cy="365" r="7"/></g>
+  <g transform="translate(470 450)">
+    <rect width="680" height="105" rx="9" fill="#0a1020" stroke="#59627d" stroke-opacity=".7"/>
+    <g fill="url(#key)" stroke="#c6cddd" stroke-width="1">
+      <rect x="8" y="8" width="58" height="88" rx="3"/><rect x="68" y="8" width="58" height="88" rx="3"/><rect x="128" y="8" width="58" height="88" rx="3"/><rect x="188" y="8" width="58" height="88" rx="3"/><rect x="248" y="8" width="58" height="88" rx="3"/><rect x="308" y="8" width="58" height="88" rx="3"/><rect x="368" y="8" width="58" height="88" rx="3"/><rect x="428" y="8" width="58" height="88" rx="3"/><rect x="488" y="8" width="58" height="88" rx="3"/><rect x="548" y="8" width="58" height="88" rx="3"/><rect x="608" y="8" width="58" height="88" rx="3"/>
+    </g>
+    <g fill="#101827"><rect x="49" y="8" width="34" height="55" rx="3"/><rect x="109" y="8" width="34" height="55" rx="3"/><rect x="229" y="8" width="34" height="55" rx="3"/><rect x="289" y="8" width="34" height="55" rx="3"/><rect x="349" y="8" width="34" height="55" rx="3"/><rect x="469" y="8" width="34" height="55" rx="3"/><rect x="529" y="8" width="34" height="55" rx="3"/><rect x="589" y="8" width="34" height="55" rx="3"/></g>
+  </g>
+  <rect x="78" y="408" width="245" height="4" rx="2" fill="url(#glow)"/>
+  <text x="78" y="450" font-family="Arial, Helvetica, sans-serif" font-size="15" letter-spacing="3" fill="#91a2c6">GESTURE-BASED MUSIC</text>
+  <text x="78" y="486" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#d7def0">Без клавиш под пальцами.</text>
+  <text x="78" y="512" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#d7def0">Только жесты, камера и звук.</text>
+  <g fill="#6e7fa4" opacity=".65"><circle cx="1110" cy="90" r="2"/><circle cx="1140" cy="125" r="2"/><circle cx="1065" cy="145" r="2"/><circle cx="630" cy="150" r="2"/><circle cx="655" cy="185" r="2"/></g>
+</svg>
