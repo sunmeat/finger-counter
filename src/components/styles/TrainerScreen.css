@@ -710,13 +710,13 @@
 .trainer-confetti i {
     position: absolute;
     top: -18px;
-    left: calc((var(--confetti-index) * 41 + 7) % 100 * 1%);
+    left: calc(var(--confetti-index) * 4.17%);
     width: 7px;
     height: 13px;
     border-radius: 2px;
     background: hsl(calc(var(--confetti-index) * 47), 85%, 66%);
     transform: rotate(calc(var(--confetti-index) * 37deg));
-    animation: confetti-fall calc(1.8s + (var(--confetti-index) % 5) * .25s) ease-in infinite;
+    animation: confetti-fall calc(1.8s + var(--confetti-index) * .025s) ease-in infinite;
     animation-delay: calc(var(--confetti-index) * -.11s);
 }
 @keyframes celebration-fade-in { from { opacity: 0; } to { opacity: 1; } }
