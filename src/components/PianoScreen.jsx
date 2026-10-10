@@ -6,6 +6,7 @@ import HandPanel from "./hand/HandPanel.jsx";
 import VideoStage from "./stage/VideoStage.jsx";
 import CurrentSound from "./stage/CurrentSound.jsx";
 import Keyboard from "./piano/Keyboard.jsx";
+import RecorderControls from "./RecorderControls.jsx";
 
 function maskFromFingers(fingers) {
     return fingers?.map(Boolean).map(Number).join("") ?? "";
@@ -82,6 +83,7 @@ export default function PianoScreen(props) {
             <HandPanel {...panelFor("left", noteSide, noteHand, chordHand, noteRows, chordRows, handleRowClick)} />
             <div className="center">
                 <VideoStage {...props} />
+                <RecorderControls />
                 <CurrentSound result={result} soundOn={props.soundOn} noteSide={noteSide} />
                 <Keyboard
                     midi={result?.midi ?? []}
