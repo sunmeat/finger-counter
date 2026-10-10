@@ -50,6 +50,7 @@ export default function useHandTracking({
     onResult,
     onStatus,
     retryToken,
+    cameraFacing = "user",
 }) {
     const dominantRef = useRef(dominant);
 
@@ -184,7 +185,7 @@ export default function useHandTracking({
                 onStatus("Запрашиваю доступ к камере…");
 
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: 640, height: 480, facingMode: "user" },
+                    video: { width: 640, height: 480, facingMode: { ideal: cameraFacing } },
                     audio: false,
                 });
 
@@ -344,5 +345,5 @@ export default function useHandTracking({
             cancelled = true;
             cleanupResources();
         };
-    }, [videoRef, canvasRef, player, onResult, onStatus, retryToken]);
+    }, [videoRef, canvasRef, player, onResult, onStatus, retryToken, cameraFacing]);
 }
