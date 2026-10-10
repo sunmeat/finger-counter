@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import * as Tone from "tone";
 import {
     CHORD_GESTURES,
     NOTE_COMBINATIONS,
@@ -101,6 +102,7 @@ export default function TrainerScreen(props) {
     const [feedback, setFeedback] = useState({ type: "hint", text: "Покажи нужную комбинацию пальцев в камеру." });
     const [progress, setProgress] = useState(readProgress);
     const lastAttemptRef = useRef("");
+    const celebrationPlayedRef = useRef(false);
 
     useEffect(() => {
         const preview = trainerVideoRef.current;
@@ -190,6 +192,36 @@ export default function TrainerScreen(props) {
             setFeedback({ type: "success", text: "Точно! Распознан аккорд " + target.label + "." });
         }
     }, [result, dominant, mode, task, sequenceIndex, solved]);
+
+
+    useEffect(() => {
+        if (!solved || celebrationPlayedRef.current) return;
+        celebrationPlayedRef.current = true;
+        if (!props.soundOn) return undefined;
+
+        let synth;
+        let disposed = false;
+        void Tone.start().then(() => {
+            if (disposed) return;
+            synth = new Tone.Synth({
+                oscillator: { type: "triangle" },
+                envelope: { attack: 0.008, decay: 0.18, sustain: 0.16, release: 0.45 },
+            }).toDestination();
+            synth.volume.value = -5;
+            const now = Tone.now();
+            ["C5", "E5", "G5", "C6"].forEach((note, index) => {
+                synth.triggerAttackRelease(note, "8n", now + index * 0.12, 0.72);
+            });
+        }).catch(() => {});
+        return () => {
+            disposed = true;
+            if (synth) window.setTimeout(() => synth.dispose(), 1800);
+        };
+    }, [solved, props.soundOn]);
+
+    useEffect(() => {
+        if (!solved) celebrationPlayedRef.current = false;
+    }, [solved]);
 
     const nextTask = () => {
         setTask(createTask(mode, difficulty));
