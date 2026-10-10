@@ -139,12 +139,8 @@ export default function RecorderControls() {
                 await navigator.share({ title: "Музыка на пальцах", text: "Моя музыка на пальцах 🎹", files: [file] });
                 return;
             }
-            if (navigator.share) {
-                await navigator.share({ title: "Музыка на пальцах", text: "Я записал(а) исполнение в «Музыке на пальцах»!", url: window.location.href });
-                return;
-            }
             downloadVideo();
-            setError("Этот браузер не поддерживает отправку видео напрямую. Файл скачан: прикрепите его к сообщению или публикации.");
+            setError("Этот браузер не поддерживает отправку видеофайла напрямую. Видео скачано: прикрепите его к сообщению или публикации.");
         } catch (shareError) {
             if (shareError?.name !== "AbortError") {
                 setError("Не удалось открыть меню отправки. Скачайте видео и прикрепите его вручную.");
