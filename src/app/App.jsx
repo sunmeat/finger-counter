@@ -8,27 +8,40 @@ import "../styles/global.css";
 
 export default function App() {
     const app = usePianoApp();
-    const [trainerOpen, setTrainerOpen] = useState(false);
-    const keepPianoMounted = app.settingsOpen || trainerOpen;
+    const [activeSection, setActiveSection] = useState("piano");
+    const keepPianoMounted = activeSection !== "piano";
+
+    const openPiano = () => setActiveSection("piano");
+    const openLearn = () => setActiveSection("learn");
+    const openSettings = () => setActiveSection("settings");
 
     return (
         <>
             <div className={keepPianoMounted ? "piano-screen-hidden" : ""} aria-hidden={keepPianoMounted}>
-                <PianoScreen {...app} onOpenTrainer={() => setTrainerOpen(true)} />
+                <PianoScreen
+                    {...app}
+                    activeSection="piano"
+                    onOpenPiano={openPiano}
+                    onOpenTrainer={openLearn}
+                    onOpenSettings={openSettings}
+                />
             </div>
-            {app.settingsOpen && (
+            {activeSection === "settings" && (
                 <SettingsScreen
-                    dominant={app.dominant}
-                    onPickDominant={app.onPickDominant}
-                    gestures={app.gestures}
-                    onSaveGestures={app.onSaveGestures}
-                    onBack={app.onCloseSettings}
+                    {...app}
+                    onBack={openPiano}
+                    onOpenPiano={openPiano}
+                    onOpenTrainer={openLearn}
+                    onOpenSettings={openSettings}
                 />
             )}
-            {!app.settingsOpen && trainerOpen && (
+            {activeSection === "learn" && (
                 <TrainerScreen
                     {...app}
-                    onCloseTrainer={() => setTrainerOpen(false)}
+                    activeSection="learn"
+                    onOpenPiano={openPiano}
+                    onOpenTrainer={openLearn}
+                    onOpenSettings={openSettings}
                 />
             )}
             <Analytics />
