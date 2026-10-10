@@ -12,10 +12,10 @@ function stopTracks(stream) {
     stream?.getTracks().forEach((track) => track.stop());
 }
 
-export default function RecorderControls() {
+export default function RecorderControls({ videoRef }) {
     const recorderRef = useRef(null);
     const chunksRef = useRef([]);
-    const displayStreamRef = useRef(null);
+    const cameraStreamRef = useRef(null);
     const microphoneStreamRef = useRef(null);
     const audioContextRef = useRef(null);
     const [recording, setRecording] = useState(false);
@@ -25,17 +25,17 @@ export default function RecorderControls() {
     const [error, setError] = useState("");
 
     useEffect(() => () => {
-        recorderRef.current?.state !== "inactive" && recorderRef.current?.stop();
-        stopTracks(displayStreamRef.current);
+        if (recorderRef.current?.state !== "inactive") recorderRef.current?.stop();
+        stopTracks(cameraStreamRef.current);
         stopTracks(microphoneStreamRef.current);
         void audioContextRef.current?.close();
         if (videoUrl) URL.revokeObjectURL(videoUrl);
     }, [videoUrl]);
 
     const releaseCapture = async () => {
-        stopTracks(displayStreamRef.current);
+        stopTracks(cameraStreamRef.current);
         stopTracks(microphoneStreamRef.current);
-        displayStreamRef.current = null;
+        cameraStreamRef.current = null;
         microphoneStreamRef.current = null;
         if (audioContextRef.current) {
             await audioContextRef.current.close().catch(() => {});
@@ -47,14 +47,21 @@ export default function RecorderControls() {
         setError("");
         setBusy(true);
         try {
-            if (!navigator.mediaDevices?.getDisplayMedia || !navigator.mediaDevices?.getUserMedia) {
-                throw new Error("Для записи нужен современный браузер с поддержкой захвата экрана.");
+            if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+                throw new Error("Этот браузер не поддерживает запись видео.");
             }
-            const displayStream = await navigator.mediaDevices.getDisplayMedia({
-                video: { frameRate: { ideal: 30, max: 30 } },
-                audio: true,
-            });
-            displayStreamRef.current = displayStream;
+
+            const cameraVideo = videoRef?.current;
+            const sourceStream = cameraVideo?.srcObject;
+            const sourceTrack = sourceStream?.getVideoTracks?.()[0];
+            if (!sourceTrack || sourceTrack.readyState !== "live") {
+                throw new Error("Камера ещё не готова. Подождите, пока появится изображение, и попробуйте снова.");
+            }
+
+            const cameraTrack = sourceTrack.clone();
+            const cameraStream = new MediaStream([cameraTrack]);
+            cameraStreamRef.current = cameraStream;
+
             let microphoneStream;
             try {
                 microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -63,17 +70,12 @@ export default function RecorderControls() {
                 throw new Error("Не удалось получить доступ к микрофону. Разрешите его и попробуйте ещё раз.");
             }
 
-            const videoTrack = displayStream.getVideoTracks()[0];
-            if (!videoTrack) throw new Error("Не удалось получить видео с экрана.");
-            const output = new MediaStream([videoTrack]);
+            const output = new MediaStream([cameraTrack]);
             const audioContext = new AudioContext();
             audioContextRef.current = audioContext;
+            await audioContext.resume();
             const destination = audioContext.createMediaStreamDestination();
-            const audioTracks = [
-                ...displayStream.getAudioTracks(),
-                ...microphoneStream.getAudioTracks(),
-            ];
-            audioTracks.forEach((track) => {
+            microphoneStream.getAudioTracks().forEach((track) => {
                 const source = audioContext.createMediaStreamSource(new MediaStream([track]));
                 source.connect(destination);
             });
@@ -98,7 +100,7 @@ export default function RecorderControls() {
                 setRecording(false);
                 await releaseCapture();
             };
-            videoTrack.addEventListener("ended", () => {
+            cameraTrack.addEventListener("ended", () => {
                 if (recorder.state !== "inactive") recorder.stop();
             }, { once: true });
             recorder.start(1000);
@@ -153,7 +155,7 @@ export default function RecorderControls() {
             <div className="recorder-copy">
                 <span className="recorder-eyebrow">ТВОЁ ИСПОЛНЕНИЕ</span>
                 <h2>Спой и сыграй пальцами</h2>
-                <p>Запиши экран с жестами и звуком микрофона. Видео собирается прямо в браузере и не загружается на сервер.</p>
+                <p>Записывается только изображение с камеры и звук микрофона. Интерфейс, подсказки и подсветки в ролик не попадают. Видео остаётся на твоём устройстве.</p>
             </div>
             <div className="recorder-actions">
                 {recording ? (
@@ -176,7 +178,7 @@ export default function RecorderControls() {
                     </>
                 )}
             </div>
-            {recording && <p className="recorder-hint">Выберите вкладку с приложением и включите передачу звука вкладки, если хотите записать звучание пианино. Микрофон записывается отдельно.</p>}
+            {recording && <p className="recorder-hint">Записывается только камера и микрофон. Звук пианино, который воспроизводит приложение, в запись не включается.</p>}
             {videoBlob && !recording && <video className="recorder-preview" src={videoUrl} controls playsInline />}
             {error && <p className="recorder-error" role="status">{error}</p>}
         </section>

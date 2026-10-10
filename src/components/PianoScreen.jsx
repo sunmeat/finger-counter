@@ -46,7 +46,7 @@ function panelFor(side, noteSide, noteHand, chordHand, noteRows, chordRows, onRo
 }
 
 export default function PianoScreen(props) {
-    const { result, dominant, onPlayPreview } = props;
+    const { result, dominant, onPlayPreview, videoRef } = props;
     const [preview, setPreview] = useState({ midi: [], tone: null });
 
     useEffect(() => {
@@ -83,7 +83,7 @@ export default function PianoScreen(props) {
             <HandPanel {...panelFor("left", noteSide, noteHand, chordHand, noteRows, chordRows, handleRowClick)} />
             <div className="center">
                 <VideoStage {...props} />
-                <RecorderControls />
+                <RecorderControls videoRef={videoRef} />
                 <CurrentSound result={result} soundOn={props.soundOn} noteSide={noteSide} />
                 <Keyboard
                     midi={result?.midi ?? []}
