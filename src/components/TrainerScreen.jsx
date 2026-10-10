@@ -109,6 +109,8 @@ export default function TrainerScreen(props) {
 
     useEffect(() => {
         if (solved) return;
+        const expectedKind = mode === "notes" ? "note" : mode === "sequence" ? "sequence" : "chord";
+        if (task.kind !== expectedKind) return;
 
         const { noteSide, chordSide } = rolesFor(dominant);
         const noteHand = result?.hands?.find((hand) => hand.side === noteSide);
