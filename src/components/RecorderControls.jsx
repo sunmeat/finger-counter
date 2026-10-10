@@ -17,7 +17,6 @@ export default function RecorderControls({ videoRef }) {
     const chunksRef = useRef([]);
     const cameraStreamRef = useRef(null);
     const microphoneStreamRef = useRef(null);
-    const audioContextRef = useRef(null);
     const [recording, setRecording] = useState(false);
     const [busy, setBusy] = useState(false);
     const [videoUrl, setVideoUrl] = useState("");
@@ -28,19 +27,14 @@ export default function RecorderControls({ videoRef }) {
         if (recorderRef.current?.state !== "inactive") recorderRef.current?.stop();
         stopTracks(cameraStreamRef.current);
         stopTracks(microphoneStreamRef.current);
-        void audioContextRef.current?.close();
         if (videoUrl) URL.revokeObjectURL(videoUrl);
     }, [videoUrl]);
 
-    const releaseCapture = async () => {
+    const releaseCapture = () => {
         stopTracks(cameraStreamRef.current);
         stopTracks(microphoneStreamRef.current);
         cameraStreamRef.current = null;
         microphoneStreamRef.current = null;
-        if (audioContextRef.current) {
-            await audioContextRef.current.close().catch(() => {});
-            audioContextRef.current = null;
-        }
     };
 
     const startRecording = async () => {
@@ -51,6 +45,8 @@ export default function RecorderControls({ videoRef }) {
                 throw new Error("Этот браузер не поддерживает запись видео.");
             }
 
+            // Используем уже открытую камеру приложения. getDisplayMedia здесь не нужен,
+            // поэтому браузер не показывает окно выбора экрана или вкладки.
             const cameraVideo = videoRef?.current;
             const sourceStream = cameraVideo?.srcObject;
             const sourceTrack = sourceStream?.getVideoTracks?.()[0];
@@ -64,31 +60,39 @@ export default function RecorderControls({ videoRef }) {
 
             let microphoneStream;
             try {
-                microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                microphoneStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                    },
+                    video: false,
+                });
                 microphoneStreamRef.current = microphoneStream;
             } catch {
-                throw new Error("Не удалось получить доступ к микрофону. Разрешите его и попробуйте ещё раз.");
+                throw new Error("Не удалось получить доступ к микрофону. Разрешите микрофон для сайта и попробуйте ещё раз.");
             }
 
-            const output = new MediaStream([cameraTrack]);
-            const audioContext = new AudioContext();
-            audioContextRef.current = audioContext;
-            await audioContext.resume();
-            const destination = audioContext.createMediaStreamDestination();
-            microphoneStream.getAudioTracks().forEach((track) => {
-                const source = audioContext.createMediaStreamSource(new MediaStream([track]));
-                source.connect(destination);
-            });
-            destination.stream.getAudioTracks().forEach((track) => output.addTrack(track));
+            const microphoneTracks = microphoneStream.getAudioTracks();
+            if (microphoneTracks.length === 0) {
+                throw new Error("Микрофон не передал аудиосигнал. Проверьте выбранный микрофон в настройках браузера.");
+            }
 
+            // Добавляем дорожку микрофона напрямую, без AudioContext и дополнительного
+            // аудиомикширования, которое могло приводить к пустой звуковой дорожке.
+            const output = new MediaStream([cameraTrack, ...microphoneTracks]);
             chunksRef.current = [];
             const mimeType = supportedMimeType();
             const recorder = new MediaRecorder(output, mimeType ? { mimeType } : undefined);
             recorderRef.current = recorder;
+
             recorder.ondataavailable = (event) => {
                 if (event.data.size > 0) chunksRef.current.push(event.data);
             };
-            recorder.onstop = async () => {
+            recorder.onerror = () => {
+                setError("Во время записи произошла ошибка. Попробуйте ещё раз.");
+            };
+            recorder.onstop = () => {
                 const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
                 if (blob.size > 0) {
                     setVideoBlob(blob);
@@ -96,19 +100,24 @@ export default function RecorderControls({ videoRef }) {
                         if (previous) URL.revokeObjectURL(previous);
                         return URL.createObjectURL(blob);
                     });
+                } else {
+                    setError("Видео не удалось сохранить. Попробуйте записать ещё раз.");
                 }
                 setRecording(false);
-                await releaseCapture();
+                releaseCapture();
             };
+
             cameraTrack.addEventListener("ended", () => {
                 if (recorder.state !== "inactive") recorder.stop();
             }, { once: true });
             recorder.start(1000);
             setRecording(true);
         } catch (captureError) {
-            await releaseCapture();
+            releaseCapture();
             if (captureError?.name !== "NotAllowedError") {
                 setError(captureError?.message || "Не удалось начать запись.");
+            } else {
+                setError("Разрешите доступ к микрофону в настройках браузера и нажмите запись ещё раз.");
             }
         } finally {
             setBusy(false);
@@ -178,7 +187,7 @@ export default function RecorderControls({ videoRef }) {
                     </>
                 )}
             </div>
-            {recording && <p className="recorder-hint">Записывается только камера и микрофон. Звук пианино, который воспроизводит приложение, в запись не включается.</p>}
+            {recording && <p className="recorder-hint">Записывается изображение камеры и звук микрофона. Интерфейс приложения в ролик не попадает.</p>}
             {videoBlob && !recording && <video className="recorder-preview" src={videoUrl} controls playsInline />}
             {error && <p className="recorder-error" role="status">{error}</p>}
         </section>
