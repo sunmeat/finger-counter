@@ -74,11 +74,6 @@ function createTask(mode, difficulty) {
     return { kind: "chord", difficulty, target, prompt: "Сыграй " + target.label };
 }
 
-function equalMidi(actual, expected) {
-    return Array.isArray(actual) && actual.length === expected.length &&
-        [...actual].sort((a, b) => a - b).every((value, index) => value === expected[index]);
-}
-
 export default function TrainerScreen(props) {
     const { result, dominant, onCloseTrainer } = props;
     const trainerVideoRef = useRef(null);
@@ -114,7 +109,6 @@ export default function TrainerScreen(props) {
         setTask(createTask(mode, difficulty));
         setSequenceIndex(0);
         setSolved(false);
-        lastAttemptRef.current = "";
         setFeedback({ type: "hint", text: "Новое задание готово. Покажи ответ обеими руками." });
     }, [mode, difficulty]);
 
@@ -197,7 +191,6 @@ export default function TrainerScreen(props) {
         setTask(createTask(mode, difficulty));
         setSequenceIndex(0);
         setSolved(false);
-        lastAttemptRef.current = "";
         setFeedback({ type: "hint", text: "Новое задание. Покажи ответ в камеру." });
     };
 
