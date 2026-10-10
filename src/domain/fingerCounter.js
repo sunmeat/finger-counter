@@ -1,5 +1,3 @@
-// Индексы точек руки в MediaPipe Hands (21 landmark)
-// 0 — запястье; у каждого пальца: MCP -> PIP -> DIP -> TIP
 const THUMB_MCP = 2;
 const THUMB_IP = 3;
 const THUMB_TIP = 4;
@@ -43,18 +41,6 @@ function isExtended(a, b, c, threshold) {
     return angle(a, b, c) >= threshold;
 }
 
-/**
- * Считает разогнутые пальцы по 3D world landmarks MediaPipe.
- *
- * Для указательного, среднего, безымянного и мизинца используется угол
- * MCP-PIP-DIP. Разогнутый палец имеет большой угол в PIP, а согнутый
- * уменьшается независимо от расстояния руки до камеры и её проекции.
- *
- * Для большого пальца используется угол MCP-IP-TIP, поскольку у него
- * другая структура суставов.
- *
- * @returns {{ count: number, fingers: boolean[] }} fingers: [thumb, index, middle, ring, pinky]
- */
 export function countFingers(worldLandmarks) {
     const thumb = isExtended(
         worldLandmarks[THUMB_MCP],

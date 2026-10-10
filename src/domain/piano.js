@@ -1,13 +1,4 @@
-// src/piano.js
-// Ноты, аккорды и набор инструментов на Tone.js.
-//
-// Tone.js берёт на себя полифонию, ADSR, фильтры,
-// сэмплирование и синтез. Логика жестов при этом
-// остаётся полностью независимой от аудиодвижка.
-
 import * as Tone from "tone";
-
-// ---------- Ноты ----------
 
 export const NOTE_NAMES = [
     "до",
@@ -46,8 +37,6 @@ export const ROOT_MIDI = NOTE_COMBINATIONS.map(({ midi }) => midi);
 const NOTE_MAP = new Map(
     NOTE_COMBINATIONS.map((note) => [note.mask, note])
 );
-
-// ---------- Аккорды ----------
 
 export const CHORD_GESTURES = [
     { fingers: [], mask: 0, name: "одна нота", intervals: [0] },
@@ -118,8 +107,6 @@ export function planSound(noteFingers, chordFingers) {
         label: `${note.name} ${chord.name}`.trim(),
     };
 }
-
-// ---------- Инструменты ----------
 
 export const INSTRUMENTS = [
     { id: "piano", name: "Acoustic Piano" },

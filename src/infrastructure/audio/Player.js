@@ -1,14 +1,8 @@
 import * as Tone from "tone";
-
-// ---------- Инструменты ----------
-
-
-
 const PIANO_BASE_URL = "https://tonejs.github.io/audio/salamander/";
 const MOBILE_AUDIO_BOOST = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 function instrumentVolume(volume) {
-    // На телефонах компенсируем тихие уровни синтезаторов, не поднимая их выше -1 dB.
     return MOBILE_AUDIO_BOOST ? Math.min(volume + 8, -1) : volume;
 }
 
@@ -372,18 +366,12 @@ export class Player {
     }
 }
 
-/**
- * Mixes the app's Tone.js output and microphone into one audio track for recording.
- * App audio continues playing through the speakers as usual.
- */
 export function createRecordingAudioMixer(microphoneStream) {
     const context = Tone.getContext().rawContext;
     const destination = context.createMediaStreamDestination();
     const toneOutput = Tone.getDestination().output;
     const microphoneSource = context.createMediaStreamSource(microphoneStream);
     const microphoneGain = context.createGain();
-
-    // Keep both sources in the same AudioContext and mix to a single track.
     microphoneGain.gain.value = 1;
     toneOutput.connect(destination);
     microphoneSource.connect(microphoneGain);
