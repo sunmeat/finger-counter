@@ -642,3 +642,92 @@
         height: 24px;
     }
 }
+
+
+/* Celebration overlay after a successfully completed task */
+.trainer-celebration-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    overflow-y: auto;
+    background: #050a10d9;
+    backdrop-filter: blur(9px);
+    animation: celebration-fade-in .22s ease-out both;
+}
+.trainer-celebration {
+    position: relative;
+    isolation: isolate;
+    width: min(100%, 560px);
+    max-height: min(90vh, 820px);
+    overflow: hidden auto;
+    padding: clamp(24px, 5vw, 42px);
+    border: 1px solid #f0b44c88;
+    border-radius: 24px;
+    background: radial-gradient(ellipse at 50% 0%, #f0b44c20, transparent 58%), linear-gradient(145deg, #1b2a36, #101a23);
+    box-shadow: 0 28px 100px #0009, 0 0 60px #f0b44c12;
+    text-align: center;
+    animation: celebration-pop .42s cubic-bezier(.2,.8,.2,1) both;
+}
+.trainer-celebration-icon {
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 17px;
+    border: 1px solid #f0b44c88;
+    border-radius: 50%;
+    background: #f0b44c1b;
+    color: var(--note);
+    font-size: 2.4rem;
+    animation: celebration-glow 1.5s ease-in-out infinite alternate;
+}
+.trainer-celebration h2 {
+    margin: 9px 0 10px;
+    font: 700 clamp(1.7rem, 5vw, 2.45rem)/1.12 var(--serif);
+}
+.trainer-celebration-copy { margin: 0 auto 22px; color: var(--muted); max-width: 38ch; }
+.trainer-celebration-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin: 22px 0;
+}
+.trainer-celebration-stats > div {
+    display: grid;
+    gap: 4px;
+    padding: 14px 8px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #0b111766;
+}
+.trainer-celebration-stats > div strong { color: var(--note); font: 700 1.55rem var(--serif); }
+.trainer-celebration-stats > div span { color: var(--muted); font-size: .75rem; }
+.trainer-celebration-button { width: 100%; }
+.trainer-confetti { position: absolute; inset: 0 0 auto; height: 180px; overflow: hidden; pointer-events: none; z-index: -1; }
+.trainer-confetti i {
+    position: absolute;
+    top: -18px;
+    left: calc(var(--confetti-index) * 4.17%);
+    width: 7px;
+    height: 13px;
+    border-radius: 2px;
+    background: hsl(calc(var(--confetti-index) * 47), 85%, 66%);
+    transform: rotate(calc(var(--confetti-index) * 37deg));
+    animation: confetti-fall calc(1.8s + var(--confetti-index) * .025s) ease-in infinite;
+    animation-delay: calc(var(--confetti-index) * -.11s);
+}
+@keyframes celebration-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes celebration-pop { from { opacity: 0; transform: translateY(18px) scale(.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes celebration-glow { from { box-shadow: 0 0 0 #f0b44c00; transform: scale(1); } to { box-shadow: 0 0 30px #f0b44c44; transform: scale(1.06); } }
+@keyframes confetti-fall { 0% { transform: translateY(-15px) rotate(0deg); opacity: 0; } 12% { opacity: 1; } 100% { transform: translateY(220px) rotate(360deg); opacity: 0; } }
+@media (max-width: 480px) {
+    .trainer-celebration-backdrop { padding: 12px; }
+    .trainer-celebration-stats { gap: 7px; }
+    .trainer-celebration-stats > div { padding: 11px 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .trainer-celebration-backdrop, .trainer-celebration, .trainer-celebration-icon, .trainer-confetti i { animation: none !important; }
+}
