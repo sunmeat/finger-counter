@@ -293,7 +293,7 @@ export default function useHandTracking({
                             const basePlan = planSound(noteHand?.fingers, chordHand?.fingers);
                             const matchedGesture = gesturesRef.current.find((gesture) => {
                                 const hand = smoothedHands.find((candidate) => candidate.side === gesture.side);
-                                return hand && hand.fingers.map(Number).join("") === gesture.mask;
+                                return gesture.type !== "default" && hand && hand.fingers.map(Number).join("") === gesture.mask;
                             });
 
                             let plan = basePlan;
