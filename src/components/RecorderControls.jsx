@@ -50,8 +50,6 @@ export default function RecorderControls({ videoRef }) {
                 throw new Error("Этот браузер не поддерживает запись видео.");
             }
 
-            // Используем уже открытую камеру приложения. getDisplayMedia здесь не нужен,
-            // поэтому браузер не показывает окно выбора экрана или вкладки.
             const cameraVideo = videoRef?.current;
             const sourceStream = cameraVideo?.srcObject;
             const sourceTrack = sourceStream?.getVideoTracks?.()[0];
@@ -83,8 +81,6 @@ export default function RecorderControls({ videoRef }) {
                 throw new Error("Микрофон не передал аудиосигнал. Проверьте выбранный микрофон в настройках браузера.");
             }
 
-            // Смешиваем голос и звук Tone.js в одну аудиодорожку.
-            // Звук приложения при этом продолжает играть через колонки.
             const audioMixer = createRecordingAudioMixer(microphoneStream);
             audioMixerRef.current = audioMixer;
             const mixedAudioTrack = audioMixer.stream.getAudioTracks()[0];
