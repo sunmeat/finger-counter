@@ -24,3 +24,5 @@
 .recorder-preview{display:block;width:100%;max-height:360px;border-radius:12px;background:#080d12}
 .recorder-error{color:#ffaaa5!important;font-size:.82rem!important}
 @media(max-width:600px){.recorder{padding:17px}.recorder-actions{display:grid;grid-template-columns:1fr}.recorder-button{width:100%}}
+
+.piano-screen-hidden{position:fixed;left:-2000px;top:0;width:1360px;height:100vh;overflow:hidden;opacity:0;pointer-events:none;z-index:-1}
