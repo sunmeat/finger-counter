@@ -4,7 +4,17 @@ import SoundButton from "../controls/SoundButton.jsx";
 import "../styles/AppHeader.css";
 
 export default function AppHeader(props) {
-    const { lede, instrument, onPickInstrument, soundOn, onEnableSound, onOpenSettings } = props;
+    const {
+        lede,
+        instrument,
+        onPickInstrument,
+        soundOn,
+        onEnableSound,
+        onOpenSettings,
+        onOpenTrainer,
+        onCloseTrainer,
+    } = props;
+
     return (
         <header className="head">
             <div>
@@ -12,6 +22,15 @@ export default function AppHeader(props) {
                 <p className="lede">{lede}</p>
             </div>
             <div className="toolbar">
+                {onCloseTrainer ? (
+                    <button type="button" className="settings-open-button trainer-nav-button" onClick={onCloseTrainer}>
+                        ← К пианино
+                    </button>
+                ) : (
+                    <button type="button" className="settings-open-button trainer-nav-button" onClick={onOpenTrainer}>
+                        🧠 Тренажёр
+                    </button>
+                )}
                 <InstrumentSelect options={INSTRUMENTS} value={instrument} onChange={onPickInstrument} />
                 <SoundButton soundOn={soundOn} onClick={onEnableSound} />
                 <button type="button" className="settings-open-button" onClick={onOpenSettings}>⚙ Настройки</button>
