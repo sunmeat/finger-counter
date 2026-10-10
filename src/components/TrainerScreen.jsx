@@ -7,7 +7,6 @@ import {
 } from "../domain/piano.js";
 import { rolesFor } from "../domain/handRoles.js";
 import AppHeader from "./layout/AppHeader.jsx";
-import VideoStage from "./stage/VideoStage.jsx";
 import CurrentSound from "./stage/CurrentSound.jsx";
 import "./styles/TrainerScreen.css";
 
@@ -82,6 +81,7 @@ function equalMidi(actual, expected) {
 
 export default function TrainerScreen(props) {
     const { result, dominant, onCloseTrainer } = props;
+    const trainerVideoRef = useRef(null);
     const [mode, setMode] = useState("chords");
     const [difficulty, setDifficulty] = useState("easy");
     const [task, setTask] = useState(() => createTask("chords", "easy"));
@@ -90,6 +90,17 @@ export default function TrainerScreen(props) {
     const [feedback, setFeedback] = useState({ type: "hint", text: "Покажи нужную комбинацию пальцев в камеру." });
     const [progress, setProgress] = useState(readProgress);
     const lastAttemptRef = useRef("");
+
+    useEffect(() => {
+        const preview = trainerVideoRef.current;
+        const source = props.videoRef?.current;
+        if (!preview || !source?.srcObject) return;
+        preview.srcObject = source.srcObject;
+        void preview.play().catch(() => {});
+        return () => {
+            preview.srcObject = null;
+        };
+    }, [props.videoRef, props.cameraFacing, props.status]);
 
     useEffect(() => {
         try {
@@ -285,7 +296,10 @@ export default function TrainerScreen(props) {
                         <h3>Твои руки, твой инструмент</h3>
                         <p>{props.status || "Покажи руки в кадре"}</p>
                     </div>
-                    <VideoStage {...props} />
+                    <div className="trainer-stage">
+                        <video ref={trainerVideoRef} autoPlay muted playsInline />
+                        {!result && <span className="trainer-stage-status">{props.status || "Ожидаю камеру…"}</span>}
+                    </div>
                     <CurrentSound result={result} soundOn={props.soundOn} noteSide={noteSide} />
                     <p className="trainer-privacy">Прогресс сохраняется только в этом браузере. Регистрация не нужна.</p>
                 </aside>
