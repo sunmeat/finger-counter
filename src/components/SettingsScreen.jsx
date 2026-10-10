@@ -29,7 +29,7 @@ function actionLabel(gesture) {
     return GESTURE_ACTIONS.find(({ id }) => id === gesture.type)?.name ?? gesture.type;
 }
 
-export default function SettingsScreen({ dominant, onPickDominant, gestures, onSaveGestures, onBack }) {
+export default function SettingsScreen({ dominant, onPickDominant, gestures, onSaveGestures, onBack, onOpenPiano, onOpenTrainer, onOpenSettings }) {
     const [draft, setDraft] = useState(() => completeGestureLayout(gestures));
     const [message, setMessage] = useState("");
     const fileRef = useRef(null);
@@ -89,7 +89,11 @@ export default function SettingsScreen({ dominant, onPickDominant, gestures, onS
                     <h1>Настройки</h1>
                     <p>Все 32 комбинации для каждой руки. Экспорт и импорт сохраняют полную раскладку.</p>
                 </div>
-                <button className="settings-back" type="button" onClick={onBack}>← Вернуться к пианино</button>
+                <nav className="settings-section-nav" aria-label="Основные разделы">
+                    <button type="button" className="settings-section-link" onClick={onOpenPiano}>🎹 Пианино</button>
+                    <button type="button" className="settings-section-link" onClick={onOpenTrainer}>📚 Обучение</button>
+                    <button type="button" className="settings-section-link is-active" aria-current="page" onClick={onOpenSettings}>⚙ Настройки</button>
+                </nav>
             </header>
 
             <section className="settings-card">
