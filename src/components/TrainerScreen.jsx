@@ -248,7 +248,7 @@ export default function TrainerScreen(props) {
                                 {task.sequence.map((item, index) => (
                                     <div key={index} className={"trainer-sequence-item " + (index < sequenceIndex ? "is-done" : index === sequenceIndex ? "is-current" : "")}>
                                         <span>{index + 1}</span>
-                                        <strong>{index < sequenceIndex || solved ? item.label : index === sequenceIndex ? item.label : "•••"}</strong>
+                                        <strong>{item.label}</strong>
                                         {index < sequenceIndex && <small>Распознано</small>}
                                     </div>
                                 ))}
