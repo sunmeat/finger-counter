@@ -12,28 +12,26 @@ export default function AppHeader(props) {
         onEnableSound,
         onOpenSettings,
         onOpenTrainer,
-        onCloseTrainer,
+        onOpenPiano,
+        activeSection = "piano",
     } = props;
 
     return (
         <header className="head">
-            <div>
+            <div className="head-brand">
                 <h1 className="title">Музыка на пальцах</h1>
                 <p className="lede">{lede}</p>
             </div>
-            <div className="toolbar">
-                {onCloseTrainer ? (
-                    <button type="button" className="settings-open-button trainer-nav-button" onClick={onCloseTrainer}>
-                        ← К пианино
-                    </button>
-                ) : (
-                    <button type="button" className="settings-open-button trainer-nav-button" onClick={onOpenTrainer}>
-                        🧠 Тренажёр
-                    </button>
-                )}
-                <InstrumentSelect options={INSTRUMENTS} value={instrument} onChange={onPickInstrument} />
-                <SoundButton soundOn={soundOn} onClick={onEnableSound} />
-                <button type="button" className="settings-open-button" onClick={onOpenSettings}>⚙ Настройки</button>
+            <div className="head-controls">
+                <nav className="section-nav" aria-label="Основные разделы">
+                    <button type="button" className={activeSection === "piano" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "piano" ? "page" : undefined} onClick={onOpenPiano}>🎹 Пианино</button>
+                    <button type="button" className={activeSection === "learn" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "learn" ? "page" : undefined} onClick={onOpenTrainer}>📚 Обучение</button>
+                    <button type="button" className={activeSection === "settings" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "settings" ? "page" : undefined} onClick={onOpenSettings}>⚙ Настройки</button>
+                </nav>
+                <div className="toolbar">
+                    <InstrumentSelect options={INSTRUMENTS} value={instrument} onChange={onPickInstrument} />
+                    <SoundButton soundOn={soundOn} onClick={onEnableSound} />
+                </div>
             </div>
         </header>
     );
