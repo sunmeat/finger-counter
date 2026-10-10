@@ -65,14 +65,14 @@ function createChordTarget(difficulty) {
 function createTask(mode, difficulty) {
     if (mode === "notes") {
         const note = pick(notePool(difficulty));
-        return { kind: "note", targetMidi: note.midi, label: note.name, prompt: "Покажи ноту " + note.name };
+        return { kind: "note", difficulty, targetMidi: note.midi, label: note.name, prompt: "Покажи ноту " + note.name };
     }
     if (mode === "sequence") {
         const sequence = Array.from({ length: 4 }, () => createChordTarget(difficulty));
-        return { kind: "sequence", sequence, prompt: "Повтори последовательность из четырёх аккордов" };
+        return { kind: "sequence", difficulty, sequence, prompt: "Повтори последовательность из четырёх аккордов" };
     }
     const target = createChordTarget(difficulty);
-    return { kind: "chord", target, prompt: "Сыграй " + target.label };
+    return { kind: "chord", difficulty, target, prompt: "Сыграй " + target.label };
 }
 
 function equalMidi(actual, expected) {
@@ -110,7 +110,7 @@ export default function TrainerScreen(props) {
     useEffect(() => {
         if (solved) return;
         const expectedKind = mode === "notes" ? "note" : mode === "sequence" ? "sequence" : "chord";
-        if (task.kind !== expectedKind) return;
+        if (task.kind !== expectedKind || task.difficulty !== difficulty) return;
 
         const { noteSide, chordSide } = rolesFor(dominant);
         const noteHand = result?.hands?.find((hand) => hand.side === noteSide);
