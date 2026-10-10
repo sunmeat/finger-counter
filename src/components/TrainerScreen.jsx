@@ -296,8 +296,11 @@ export default function TrainerScreen(props) {
                         <h3>Твои руки, твой инструмент</h3>
                         <p>{props.status || "Покажи руки в кадре"}</p>
                     </div>
-                    <div className="trainer-stage">
+                    <div className={"trainer-stage" + (props.cameraFacing === "environment" ? " trainer-stage-back-camera" : "")}>
                         <video ref={trainerVideoRef} autoPlay muted playsInline />
+                        <button type="button" className="trainer-camera-toggle" onClick={props.onToggleCamera}>
+                            {props.cameraFacing === "environment" ? "↻ Фронтальная" : "↻ Задняя камера"}
+                        </button>
                         {!result && <span className="trainer-stage-status">{props.status || "Ожидаю камеру…"}</span>}
                     </div>
                     <CurrentSound result={result} soundOn={props.soundOn} noteSide={noteSide} />
