@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-vision";
 import { countFingers } from "../../domain/fingerCounter.js";
-import { planSound } from "../../domain/piano.js";
+import { getNoteByFingers, planSound } from "../../domain/piano.js";
+import { CHORD_TYPES } from "../../domain/customGestures.js";
 import { MODEL_URL, STABLE_FRAMES, SWAP_HANDS, WASM_URL } from "../../domain/constants.js";
 
 function drawHand(drawing, landmarks, color, ink) {
@@ -51,12 +52,21 @@ export default function useHandTracking({
     onStatus,
     retryToken,
     cameraFacing = "user",
+    gestures = [],
+    onGestureAction,
 }) {
     const dominantRef = useRef(dominant);
+    const gesturesRef = useRef(gestures);
+    const gestureActionRef = useRef(onGestureAction);
 
     useEffect(() => {
         dominantRef.current = dominant;
     }, [dominant]);
+
+    useEffect(() => {
+        gesturesRef.current = gestures;
+        gestureActionRef.current = onGestureAction;
+    }, [gestures, onGestureAction]);
 
     useEffect(() => {
         let landmarker;
@@ -68,6 +78,7 @@ export default function useHandTracking({
         let pendingKey = null;
         let pendingFrames = 0;
         let playingKey = "";
+        let activeActionKey = "";
 
         const handHistory = new Map();
         const HISTORY_SIZE = 6;
@@ -279,7 +290,44 @@ export default function useHandTracking({
 
                             const noteHand = smoothedHands.find((h) => h.side === noteSide);
                             const chordHand = smoothedHands.find((h) => h.side === chordSide);
-                            const plan = planSound(noteHand?.fingers, chordHand?.fingers);
+                            const basePlan = planSound(noteHand?.fingers, chordHand?.fingers);
+                            const matchedGesture = gesturesRef.current.find((gesture) => {
+                                const hand = smoothedHands.find((candidate) => candidate.side === gesture.side);
+                                return hand && hand.fingers.map(Number).join("") === gesture.mask;
+                            });
+
+                            let plan = basePlan;
+                            if (matchedGesture) {
+                                if (matchedGesture.type === "note") {
+                                    plan = {
+                                        key: "custom-note:" + matchedGesture.id + ":" + matchedGesture.target,
+                                        midi: [Number(matchedGesture.target)],
+                                        roots: [Number(matchedGesture.target)],
+                                        label: "Пользовательская нота",
+                                    };
+                                } else if (matchedGesture.type === "chord") {
+                                    const chordType = CHORD_TYPES.find(({ id }) => id === matchedGesture.target);
+                                    const root = getNoteByFingers(noteHand?.fingers)?.midi;
+                                    plan = chordType && root
+                                        ? { key: "custom-chord:" + matchedGesture.id + ":" + root, midi: chordType.intervals.map((interval) => root + interval), roots: [root], label: chordType.name }
+                                        : { key: "", midi: [], roots: [], label: "" };
+                                } else if (matchedGesture.type === "octave-up" || matchedGesture.type === "octave-down") {
+                                    const shift = matchedGesture.type === "octave-up" ? 12 : -12;
+                                    plan = basePlan.midi.length
+                                        ? { ...basePlan, key: "custom-octave:" + matchedGesture.type + ":" + basePlan.key, midi: basePlan.midi.map((midi) => midi + shift), roots: basePlan.roots.map((midi) => midi + shift), label: basePlan.label + (shift > 0 ? " + октава" : " − октава") }
+                                        : basePlan;
+                                } else if (matchedGesture.type === "instrument") {
+                                    plan = { key: "", midi: [], roots: [], label: "" };
+                                }
+                            }
+
+                            const actionKey = matchedGesture?.type === "instrument"
+                                ? matchedGesture.id + ":" + matchedGesture.type + ":" + matchedGesture.target
+                                : "";
+                            if (actionKey && actionKey !== activeActionKey) {
+                                gestureActionRef.current?.({ type: matchedGesture.type, target: matchedGesture.target });
+                            }
+                            activeActionKey = actionKey;
 
                             updateSound(plan);
 
@@ -302,6 +350,7 @@ export default function useHandTracking({
                                 });
                             }
                         } else {
+                            activeActionKey = "";
                             resetHandHistory();
 
                             updateSound({
