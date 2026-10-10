@@ -11,6 +11,8 @@ import CurrentSound from "./stage/CurrentSound.jsx";
 import "./styles/TrainerScreen.css";
 
 const PROGRESS_KEY = "aerodion.trainer.progress.v1";
+const WARMUP_ATTEMPTS = 3;
+const FINGER_NAMES = ["Большой", "Указательный", "Средний", "Безымянный", "Мизинец"];
 const NATURAL_NOTES = [60, 62, 64, 65, 67, 69, 71];
 const EASY_CHORDS = CHORD_GESTURES.filter((chord) => ["мажор", "минор"].includes(chord.name));
 const MEDIUM_CHORDS = CHORD_GESTURES.filter((chord) =>
@@ -23,13 +25,27 @@ function readProgress() {
         return {
             attempts: Number(saved.attempts) || 0,
             correct: Number(saved.correct) || 0,
+            warmup: Math.min(WARMUP_ATTEMPTS, Number(saved.warmup) || 0),
             completed: Number(saved.completed) || 0,
             streak: Number(saved.streak) || 0,
             bestStreak: Number(saved.bestStreak) || 0,
         };
     } catch {
-        return { attempts: 0, correct: 0, completed: 0, streak: 0, bestStreak: 0 };
+        return { attempts: 0, correct: 0, warmup: 0, completed: 0, streak: 0, bestStreak: 0 };
     }
+}
+
+function recordAttempt(current, correct) {
+    const warmingUp = current.warmup < WARMUP_ATTEMPTS;
+    const streak = correct ? current.streak + 1 : 0;
+    return {
+        ...current,
+        warmup: Math.min(WARMUP_ATTEMPTS, current.warmup + 1),
+        attempts: current.attempts + Number(!warmingUp),
+        correct: current.correct + Number(!warmingUp && correct),
+        streak,
+        bestStreak: correct ? Math.max(current.bestStreak, streak) : current.bestStreak,
+    };
 }
 
 function pick(items) {
@@ -133,13 +149,7 @@ export default function TrainerScreen(props) {
             lastAttemptRef.current = signature;
 
             const correct = note.midi === task.targetMidi;
-            setProgress((current) => ({
-                ...current,
-                attempts: current.attempts + 1,
-                correct: current.correct + Number(correct),
-                streak: correct ? current.streak + 1 : 0,
-                bestStreak: correct ? Math.max(current.bestStreak, current.streak + 1) : current.bestStreak,
-            }));
+            setProgress((current) => recordAttempt(current, correct));
             setFeedback(correct
                 ? { type: "success", text: "Верно! Это нота " + note.name + "." }
                 : { type: "error", text: "Распознана нота " + note.name + ". Попробуй ещё раз." });
@@ -158,13 +168,7 @@ export default function TrainerScreen(props) {
 
         const target = task.kind === "sequence" ? task.sequence[sequenceIndex] : task.target;
         const correct = note.midi === target.root && chord.mask === target.chordMask;
-        setProgress((current) => ({
-            ...current,
-            attempts: current.attempts + 1,
-            correct: current.correct + Number(correct),
-            streak: correct ? current.streak + 1 : 0,
-            bestStreak: correct ? Math.max(current.bestStreak, current.streak + 1) : current.bestStreak,
-        }));
+        setProgress((current) => recordAttempt(current, correct));
 
         if (!correct) {
             setFeedback({ type: "error", text: "Сейчас звучит " + note.name + " " + chord.name + ". Сверься с заданием и попробуй ещё раз." });
@@ -195,14 +199,21 @@ export default function TrainerScreen(props) {
     };
 
     const resetProgress = () => {
-        const empty = { attempts: 0, correct: 0, completed: 0, streak: 0, bestStreak: 0 };
+        const empty = { attempts: 0, correct: 0, warmup: 0, completed: 0, streak: 0, bestStreak: 0 };
         setProgress(empty);
         setFeedback({ type: "hint", text: "Прогресс сброшен. Начинаем с чистого листа." });
     };
 
     const { noteSide } = rolesFor(dominant);
-    const accuracy = progress.attempts ? Math.round((progress.correct / progress.attempts) * 100) : 0;
+    const accuracy = progress.attempts ? Math.round((progress.correct / progress.attempts) * 100) : null;
     const currentTarget = task.kind === "sequence" ? task.sequence[sequenceIndex] : task.target;
+    const targetNote = task.kind === "note"
+        ? NOTE_COMBINATIONS.find((note) => note.midi === task.targetMidi)
+        : NOTE_COMBINATIONS.find((note) => note.midi === currentTarget?.root);
+    const targetChord = task.kind === "note"
+        ? null
+        : CHORD_GESTURES.find((chord) => chord.mask === currentTarget?.chordMask);
+    const { noteSide: targetNoteSide, chordSide: targetChordSide } = rolesFor(dominant);
     const lede = "Тренируй слух и память, а руки пусть отвечают вместо кнопок.";
 
     return (
@@ -267,15 +278,42 @@ export default function TrainerScreen(props) {
                         )}
                         <p className="trainer-task-hint">
                             {task.kind === "note"
-                                ? "Используй руку, назначенную для нот. Верный жест будет определён автоматически."
-                                : "Одна рука задаёт ноту, вторая выбирает тип аккорда. Какая за что отвечает, зависит от ведущей руки в настройках."}
+                                ? "Подсказка ниже показывает нужный жест для руки, которая отвечает за ноты."
+                                : "Подсказка показывает нужные пальцы отдельно для ноты и аккорда. Подними только отмеченные пальцы."}
                         </p>
+                        <div className="trainer-finger-guides" aria-label="Подсказка по пальцам">
+                            <div className="trainer-finger-guide trainer-finger-guide-note">
+                                <div className="trainer-finger-guide-heading">
+                                    <span>{targetNoteSide === "left" ? "Левая рука" : "Правая рука"}</span>
+                                    <strong>Нота: {targetNote?.name ?? "не определена"}</strong>
+                                </div>
+                                <div className="trainer-fingers" aria-label={"Поднять пальцы: " + (targetNote?.fingers?.map((finger) => FINGER_NAMES[finger - 1]).join(", ") || "нет")}>
+                                    {FINGER_NAMES.map((name, index) => {
+                                        const raised = targetNote?.fingers?.includes(index + 1) ?? false;
+                                        return <div key={name} className={"trainer-finger " + (raised ? "is-raised" : "is-bent")}><span>{index + 1}</span><small>{name}</small><strong>{raised ? "Поднять" : "Согнуть"}</strong></div>;
+                                    })}
+                                </div>
+                            </div>
+                            <div className={"trainer-finger-guide trainer-finger-guide-chord" + (task.kind === "note" ? " is-optional" : "")}>
+                                <div className="trainer-finger-guide-heading">
+                                    <span>{targetChordSide === "left" ? "Левая рука" : "Правая рука"}</span>
+                                    <strong>{task.kind === "note" ? "Для этой задачи не нужна" : "Аккорд: " + (targetChord?.name ?? "не определён")}</strong>
+                                </div>
+                                <div className="trainer-fingers" aria-label={task.kind === "note" ? "Вторая рука не нужна" : "Пальцы для аккорда"}>
+                                    {FINGER_NAMES.map((name, index) => {
+                                        const raised = targetChord?.fingers?.includes(index + 1) ?? false;
+                                        return <div key={name} className={"trainer-finger " + (task.kind === "note" ? "is-unused" : raised ? "is-raised" : "is-bent")}><span>{index + 1}</span><small>{name}</small><strong>{task.kind === "note" ? "Не нужна" : raised ? "Поднять" : "Согнуть"}</strong></div>;
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                        {progress.warmup < WARMUP_ATTEMPTS && <p className="trainer-warmup" role="status">Разминка: {progress.warmup} из {WARMUP_ATTEMPTS}. Первые три попытки не попадут в процент успеха.</p>}
                         <div className={"trainer-feedback is-" + feedback.type} role="status">{feedback.text}</div>
                         {solved && <button type="button" className="trainer-next" onClick={nextTask}>{task.kind === "sequence" ? "Новая последовательность →" : "Следующее задание →"}</button>}
                     </section>
 
                     <div className="trainer-stats">
-                        <div><strong>{accuracy}%</strong><span>точность</span></div>
+                        <div><strong>{accuracy === null ? "—" : accuracy + "%"}</strong><span>точность · после разминки</span></div>
                         <div><strong>{progress.streak}</strong><span>серия сейчас</span></div>
                         <div><strong>{progress.bestStreak}</strong><span>лучшая серия</span></div>
                         <div><strong>{progress.completed}</strong><span>цепочек пройдено</span></div>
