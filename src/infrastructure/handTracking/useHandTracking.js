@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { FilesetResolver, HandLandmarker, DrawingUtils } from "@mediapipe/tasks-vision";
 import { countFingers } from "../../domain/fingerCounter.js";
-import { planSound } from "../../domain/piano.js";
+import { getNoteByFingers, planSound } from "../../domain/piano.js";
 import { CHORD_TYPES } from "../../domain/customGestures.js";
 import { MODEL_URL, STABLE_FRAMES, SWAP_HANDS, WASM_URL } from "../../domain/constants.js";
 
@@ -307,7 +307,7 @@ export default function useHandTracking({
                                     };
                                 } else if (matchedGesture.type === "chord") {
                                     const chordType = CHORD_TYPES.find(({ id }) => id === matchedGesture.target);
-                                    const root = basePlan.roots?.[0];
+                                    const root = getNoteByFingers(noteHand?.fingers)?.midi;
                                     plan = chordType && root
                                         ? { key: "custom-chord:" + matchedGesture.id + ":" + root, midi: chordType.intervals.map((interval) => root + interval), roots: [root], label: chordType.name }
                                         : { key: "", midi: [], roots: [], label: "" };
@@ -350,6 +350,7 @@ export default function useHandTracking({
                                 });
                             }
                         } else {
+                            activeActionKey = "";
                             resetHandHistory();
 
                             updateSound({
