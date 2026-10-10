@@ -491,3 +491,154 @@
         padding: 14px;
     }
 }
+
+
+.trainer-finger-guides {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+}
+
+.trainer-finger-guide {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #0b111755;
+}
+
+.trainer-finger-guide-note {
+    border-left: 3px solid var(--note);
+}
+
+.trainer-finger-guide-chord {
+    border-left: 3px solid var(--chord);
+}
+
+.trainer-finger-guide.is-optional {
+    opacity: .62;
+}
+
+.trainer-finger-guide-heading {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px 12px;
+    min-width: 0;
+}
+
+.trainer-finger-guide-heading span {
+    color: var(--muted);
+    font-size: .75rem;
+}
+
+.trainer-finger-guide-heading strong {
+    color: var(--text);
+    font-size: .9rem;
+    overflow-wrap: anywhere;
+}
+
+.trainer-fingers {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    min-width: 0;
+}
+
+.trainer-finger {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 5px;
+    min-width: 0;
+    padding: 9px 3px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    text-align: center;
+}
+
+.trainer-finger > span {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: var(--line);
+    color: var(--text);
+    font-size: .76rem;
+    font-weight: 700;
+}
+
+.trainer-finger small {
+    color: var(--muted);
+    font-size: clamp(.54rem, 1vw, .68rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.trainer-finger strong {
+    font-size: clamp(.52rem, .9vw, .66rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.trainer-finger.is-raised {
+    border-color: #f0b44c88;
+    background: #f0b44c12;
+}
+
+.trainer-finger-guide-chord .trainer-finger.is-raised {
+    border-color: #62cbd988;
+    background: #62cbd912;
+}
+
+.trainer-finger.is-raised > span {
+    background: var(--note);
+    color: var(--ink);
+}
+
+.trainer-finger-guide-chord .trainer-finger.is-raised > span {
+    background: var(--chord);
+}
+
+.trainer-finger.is-raised strong {
+    color: var(--text);
+}
+
+.trainer-finger.is-bent strong,
+.trainer-finger.is-unused strong {
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.trainer-warmup {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #f0b44c55;
+    border-radius: 9px;
+    background: #f0b44c0d;
+    color: var(--note);
+    font-size: .8rem;
+}
+
+@media (max-width: 420px) {
+    .trainer-finger-guide {
+        padding: 10px 8px;
+    }
+
+    .trainer-fingers {
+        gap: 4px;
+    }
+
+    .trainer-finger {
+        padding: 8px 2px;
+    }
+
+    .trainer-finger > span {
+        width: 24px;
+        height: 24px;
+    }
+}
