@@ -706,7 +706,8 @@
 .trainer-celebration-stats > div strong { color: var(--note); font: 700 1.55rem var(--serif); }
 .trainer-celebration-stats > div span { color: var(--muted); font-size: .75rem; }
 .trainer-celebration-button { width: 100%; }
-.trainer-confetti { position: absolute; inset: 0 0 auto; height: 180px; overflow: hidden; pointer-events: none; z-index: -1; }
+.trainer-confetti { position: absolute; inset: 0 0 auto; height: 180px; overflow: hidden; pointer-events: none; z-index: 0; }
+.trainer-celebration > :not(.trainer-confetti) { position: relative; z-index: 1; }
 .trainer-confetti i {
     position: absolute;
     top: -18px;
