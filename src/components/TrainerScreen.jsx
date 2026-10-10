@@ -250,7 +250,7 @@ export default function TrainerScreen(props) {
 
     return (
         <main className="trainer-page">
-            <AppHeader {...props} lede={lede} onCloseTrainer={onCloseTrainer} />
+            <AppHeader {...props} title="Обучение" lede={lede} activeSection="learn" onCloseTrainer={onCloseTrainer} />
             <section className="trainer-layout">
                 <div className="trainer-main">
                     <div className="trainer-intro">
