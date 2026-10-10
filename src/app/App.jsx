@@ -9,10 +9,14 @@ import "../styles/global.css";
 export default function App() {
     const app = usePianoApp();
     const [trainerOpen, setTrainerOpen] = useState(false);
+    const keepPianoMounted = app.settingsOpen || trainerOpen;
 
     return (
         <>
-            {app.settingsOpen ? (
+            <div className={keepPianoMounted ? "piano-screen-hidden" : ""} aria-hidden={keepPianoMounted}>
+                <PianoScreen {...app} onOpenTrainer={() => setTrainerOpen(true)} />
+            </div>
+            {app.settingsOpen && (
                 <SettingsScreen
                     dominant={app.dominant}
                     onPickDominant={app.onPickDominant}
@@ -20,15 +24,11 @@ export default function App() {
                     onSaveGestures={app.onSaveGestures}
                     onBack={app.onCloseSettings}
                 />
-            ) : trainerOpen ? (
+            )}
+            {!app.settingsOpen && trainerOpen && (
                 <TrainerScreen
                     {...app}
                     onCloseTrainer={() => setTrainerOpen(false)}
-                />
-            ) : (
-                <PianoScreen
-                    {...app}
-                    onOpenTrainer={() => setTrainerOpen(true)}
                 />
             )}
             <Analytics />
