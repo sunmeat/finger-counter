@@ -5,6 +5,12 @@ import * as Tone from "tone";
 
 
 const PIANO_BASE_URL = "https://tonejs.github.io/audio/salamander/";
+const MOBILE_AUDIO_BOOST = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+function instrumentVolume(volume) {
+    // На телефонах компенсируем тихие уровни синтезаторов, не поднимая их выше -1 dB.
+    return MOBILE_AUDIO_BOOST ? Math.min(volume + 8, -1) : volume;
+}
 
 function midiToNote(midi) {
     return Tone.Frequency(midi, "midi").toNote();
@@ -15,7 +21,7 @@ function polySynth(voice, options, volume = -8) {
         maxPolyphony: 12,
         ...options,
     });
-    synth.volume.value = volume;
+    synth.volume.value = instrumentVolume(volume);
     synth.toDestination();
     return synth;
 }
@@ -41,7 +47,7 @@ function createAcousticPiano() {
         },
         baseUrl: PIANO_BASE_URL,
         release: 0.75,
-        volume: -6,
+        volume: instrumentVolume(-6),
     }).toDestination();
 }
 
