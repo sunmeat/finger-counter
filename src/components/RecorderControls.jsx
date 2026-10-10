@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createRecordingAudioMixer } from "../infrastructure/audio/Player.js";
 
 function supportedMimeType() {
     return [
@@ -17,6 +18,7 @@ export default function RecorderControls({ videoRef }) {
     const chunksRef = useRef([]);
     const cameraStreamRef = useRef(null);
     const microphoneStreamRef = useRef(null);
+    const audioMixerRef = useRef(null);
     const [recording, setRecording] = useState(false);
     const [busy, setBusy] = useState(false);
     const [videoUrl, setVideoUrl] = useState("");
@@ -27,10 +29,13 @@ export default function RecorderControls({ videoRef }) {
         if (recorderRef.current?.state !== "inactive") recorderRef.current?.stop();
         stopTracks(cameraStreamRef.current);
         stopTracks(microphoneStreamRef.current);
+        audioMixerRef.current?.cleanup();
         if (videoUrl) URL.revokeObjectURL(videoUrl);
     }, [videoUrl]);
 
     const releaseCapture = () => {
+        audioMixerRef.current?.cleanup();
+        audioMixerRef.current = null;
         stopTracks(cameraStreamRef.current);
         stopTracks(microphoneStreamRef.current);
         cameraStreamRef.current = null;
@@ -78,9 +83,15 @@ export default function RecorderControls({ videoRef }) {
                 throw new Error("Микрофон не передал аудиосигнал. Проверьте выбранный микрофон в настройках браузера.");
             }
 
-            // Добавляем дорожку микрофона напрямую, без AudioContext и дополнительного
-            // аудиомикширования, которое могло приводить к пустой звуковой дорожке.
-            const output = new MediaStream([cameraTrack, ...microphoneTracks]);
+            // Смешиваем голос и звук Tone.js в одну аудиодорожку.
+            // Звук приложения при этом продолжает играть через колонки.
+            const audioMixer = createRecordingAudioMixer(microphoneStream);
+            audioMixerRef.current = audioMixer;
+            const mixedAudioTrack = audioMixer.stream.getAudioTracks()[0];
+            if (!mixedAudioTrack) {
+                throw new Error("Не удалось объединить звук микрофона и пианино. Попробуйте ещё раз.");
+            }
+            const output = new MediaStream([cameraTrack, mixedAudioTrack]);
             chunksRef.current = [];
             const mimeType = supportedMimeType();
             const recorder = new MediaRecorder(output, mimeType ? { mimeType } : undefined);
@@ -164,7 +175,7 @@ export default function RecorderControls({ videoRef }) {
             <div className="recorder-copy">
                 <span className="recorder-eyebrow">ТВОЁ ИСПОЛНЕНИЕ</span>
                 <h2>Спой и сыграй пальцами</h2>
-                <p>Записывается только изображение с камеры и звук микрофона. Интерфейс, подсказки и подсветки в ролик не попадают. Видео остаётся на твоём устройстве.</p>
+                <p>Записывается камера, твой голос и звук пианино. Интерфейс, подсказки и подсветки в ролик не попадают. Видео остаётся на твоём устройстве.</p>
             </div>
             <div className="recorder-actions">
                 {recording ? (
@@ -187,7 +198,7 @@ export default function RecorderControls({ videoRef }) {
                     </>
                 )}
             </div>
-            {recording && <p className="recorder-hint">Записывается изображение камеры и звук микрофона. Интерфейс приложения в ролик не попадает.</p>}
+            {recording && <p className="recorder-hint">Записываются камера, микрофон и звук пианино. Интерфейс приложения в ролик не попадает.</p>}
             {videoBlob && !recording && <video className="recorder-preview" src={videoUrl} controls playsInline />}
             {error && <p className="recorder-error" role="status">{error}</p>}
         </section>

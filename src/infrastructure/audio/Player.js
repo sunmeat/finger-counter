@@ -365,3 +365,34 @@ export class Player {
         this.activeNotes = [];
     }
 }
+
+/**
+ * Mixes the app's Tone.js output and microphone into one audio track for recording.
+ * App audio continues playing through the speakers as usual.
+ */
+export function createRecordingAudioMixer(microphoneStream) {
+    const context = Tone.getContext().rawContext;
+    const destination = context.createMediaStreamDestination();
+    const toneOutput = Tone.getDestination().output;
+    const microphoneSource = context.createMediaStreamSource(microphoneStream);
+    const microphoneGain = context.createGain();
+
+    // Keep both sources in the same AudioContext and mix to a single track.
+    microphoneGain.gain.value = 1;
+    toneOutput.connect(destination);
+    microphoneSource.connect(microphoneGain);
+    microphoneGain.connect(destination);
+
+    let cleanedUp = false;
+    return {
+        stream: destination.stream,
+        cleanup() {
+            if (cleanedUp) return;
+            cleanedUp = true;
+            try { toneOutput.disconnect(destination); } catch {}
+            try { microphoneSource.disconnect(); } catch {}
+            try { microphoneGain.disconnect(); } catch {}
+            destination.stream.getTracks().forEach((track) => track.stop());
+        },
+    };
+}
