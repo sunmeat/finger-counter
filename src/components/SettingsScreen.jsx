@@ -83,17 +83,19 @@ export default function SettingsScreen({ dominant, onPickDominant, gestures, onS
 
     return (
         <main className="settings-screen">
-            <header className="settings-header">
-                <div>
+            <header className="head settings-header">
+                <div className="head-brand">
                     <p className="settings-eyebrow">AERODION / ПЕРСОНАЛИЗАЦИЯ</p>
-                    <h1>Настройки</h1>
-                    <p>Все 32 комбинации для каждой руки. Экспорт и импорт сохраняют полную раскладку.</p>
+                    <h1 className="title settings-title">Настройки</h1>
+                    <p className="lede">Все 32 комбинации для каждой руки. Экспорт и импорт сохраняют полную раскладку.</p>
                 </div>
-                <nav className="section-nav" aria-label="Основные разделы">
-                    <button type="button" className="section-nav-link" onClick={onOpenPiano}>🏠 Главная</button>
-                    <button type="button" className="section-nav-link" onClick={onOpenTrainer}>📚 Обучение</button>
-                    <button type="button" className="section-nav-link is-active" aria-current="page" onClick={onOpenSettings}>⚙ Настройки</button>
-                </nav>
+                <div className="head-controls">
+                    <nav className="section-nav" aria-label="Основные разделы">
+                        <button type="button" className="section-nav-link" onClick={onOpenPiano}>🏠 Главная</button>
+                        <button type="button" className="section-nav-link" onClick={onOpenTrainer}>📚 Обучение</button>
+                        <button type="button" className="section-nav-link is-active" aria-current="page" onClick={onOpenSettings}>⚙ Настройки</button>
+                    </nav>
+                </div>
             </header>
 
             <section className="settings-card">
