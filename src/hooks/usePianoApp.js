@@ -16,6 +16,7 @@ export function usePianoApp() {
     const [instrument, setInstrument] = useState("piano");
     const [dominant, setDominant] = useState("right");
     const [retryToken, setRetryToken] = useState(0);
+    const [cameraFacing, setCameraFacing] = useState("user");
 
     const onResult = useCallback((value) => setResult(value), []);
     const onStatus = useCallback((value) => setStatus(value), []);
@@ -23,6 +24,12 @@ export function usePianoApp() {
         setResult(null);
         setStatus("Повторная инициализация…");
         setRetryToken((value) => value + 1);
+    }, []);
+
+    const onToggleCamera = useCallback(() => {
+        setResult(null);
+        setStatus("Переключаю камеру…");
+        setCameraFacing((current) => current === "user" ? "environment" : "user");
     }, []);
 
     const enableSound = useCallback(async () => {
@@ -81,10 +88,11 @@ export function usePianoApp() {
         onResult,
         onStatus,
         retryToken,
+        cameraFacing,
     });
 
     return {
-        videoRef, canvasRef, result, status, soundOn,
+        videoRef, canvasRef, result, status, soundOn, cameraFacing, onToggleCamera,
         onEnableSound: enableSound,
         instrument, onPickInstrument: pickInstrument,
         dominant, onPickDominant: setDominant,
