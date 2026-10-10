@@ -89,10 +89,10 @@ export default function SettingsScreen({ dominant, onPickDominant, gestures, onS
                     <h1>Настройки</h1>
                     <p>Все 32 комбинации для каждой руки. Экспорт и импорт сохраняют полную раскладку.</p>
                 </div>
-                <nav className="settings-section-nav" aria-label="Основные разделы">
-                    <button type="button" className="settings-section-link" onClick={onOpenPiano}>🎹 Пианино</button>
-                    <button type="button" className="settings-section-link" onClick={onOpenTrainer}>📚 Обучение</button>
-                    <button type="button" className="settings-section-link is-active" aria-current="page" onClick={onOpenSettings}>⚙ Настройки</button>
+                <nav className="section-nav" aria-label="Основные разделы">
+                    <button type="button" className="section-nav-link" onClick={onOpenPiano}>🏠 Главная</button>
+                    <button type="button" className="section-nav-link" onClick={onOpenTrainer}>📚 Обучение</button>
+                    <button type="button" className="section-nav-link is-active" aria-current="page" onClick={onOpenSettings}>⚙ Настройки</button>
                 </nav>
             </header>
 
