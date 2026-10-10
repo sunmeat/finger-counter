@@ -3,6 +3,7 @@ import { CHORD_TYPES, GESTURE_ACTIONS, completeGestureLayout, normalizeGestures,
 import { HANDEDNESS } from "../domain/constants.js";
 import { INSTRUMENTS } from "../domain/piano.js";
 import Segmented from "./controls/Segmented.jsx";
+import AppHeader from "./layout/AppHeader.jsx";
 import "./styles/SettingsScreen.css";
 
 const FINGERS = ["Большой", "Указательный", "Средний", "Безымянный", "Мизинец"];
@@ -29,7 +30,8 @@ function actionLabel(gesture) {
     return GESTURE_ACTIONS.find(({ id }) => id === gesture.type)?.name ?? gesture.type;
 }
 
-export default function SettingsScreen({ dominant, onPickDominant, gestures, onSaveGestures, onBack, onOpenPiano, onOpenTrainer, onOpenSettings }) {
+export default function SettingsScreen(props) {
+    const { dominant, onPickDominant, gestures, onSaveGestures, onBack, onOpenPiano, onOpenTrainer, onOpenSettings } = props;
     const [draft, setDraft] = useState(() => completeGestureLayout(gestures));
     const [message, setMessage] = useState("");
     const fileRef = useRef(null);
@@ -83,18 +85,12 @@ export default function SettingsScreen({ dominant, onPickDominant, gestures, onS
 
     return (
         <main className="settings-screen">
-            <header className="settings-header">
-                <div>
-                    <p className="settings-eyebrow">AERODION / ПЕРСОНАЛИЗАЦИЯ</p>
-                    <h1>Настройки</h1>
-                    <p>Все 32 комбинации для каждой руки. Экспорт и импорт сохраняют полную раскладку.</p>
-                </div>
-                <nav className="section-nav" aria-label="Основные разделы">
-                    <button type="button" className="section-nav-link" onClick={onOpenPiano}>🏠 Главная</button>
-                    <button type="button" className="section-nav-link" onClick={onOpenTrainer}>📚 Обучение</button>
-                    <button type="button" className="section-nav-link is-active" aria-current="page" onClick={onOpenSettings}>⚙ Настройки</button>
-                </nav>
-            </header>
+            <AppHeader
+                {...props}
+                title="Настройки"
+                lede="Все 32 комбинации для каждой руки. Экспорт и импорт сохраняют полную раскладку."
+                activeSection="settings"
+            />
 
             <section className="settings-card">
                 <div className="settings-section-title"><span>01</span><div><h2>Ведущая рука</h2><p>Меняет распределение ролей: одна рука задаёт ноту, другая выбирает аккорд.</p></div></div>
