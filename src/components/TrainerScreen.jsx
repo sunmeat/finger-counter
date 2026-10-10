@@ -370,6 +370,30 @@ export default function TrainerScreen(props) {
                     <p className="trainer-privacy">Прогресс сохраняется только в этом браузере. Регистрация не нужна.</p>
                 </aside>
             </section>
+            {solved && (
+                <div className="trainer-celebration-backdrop">
+                    <section className="trainer-celebration" role="dialog" aria-modal="true" aria-labelledby="trainer-celebration-title">
+                        <div className="trainer-confetti" aria-hidden="true">
+                            {Array.from({ length: 36 }, (_, index) => <i key={index} style={{ "--confetti-index": index }} />)}
+                        </div>
+                        <div className="trainer-celebration-icon" aria-hidden="true">🎉</div>
+                        <span className="trainer-eyebrow">ЗАДАНИЕ ВЫПОЛНЕНО</span>
+                        <h2 id="trainer-celebration-title">Браво! Ты справился!</h2>
+                        <p className="trainer-celebration-copy">
+                            {task.kind === "sequence" ? "Целая цепочка аккордов сыграна верно. Отличная музыкальная память!" : "Точно в цель! Ещё один шаг к тому, чтобы играть на пальцах свободно."}
+                        </p>
+                        <div className="trainer-celebration-stats">
+                            <div><strong>{accuracy === null ? "—" : accuracy + "%"}</strong><span>точность после разминки</span></div>
+                            <div><strong>{progress.attempts}</strong><span>учтённых попыток</span></div>
+                            <div><strong>{progress.streak}</strong><span>серия сейчас</span></div>
+                            <div><strong>{progress.bestStreak}</strong><span>лучшая серия</span></div>
+                        </div>
+                        <button type="button" className="trainer-next trainer-celebration-button" onClick={nextTask}>
+                            {task.kind === "sequence" ? "Новая последовательность →" : "Следующее задание →"}
+                        </button>
+                    </section>
+                </div>
+            )}
         </main>
     );
 }
