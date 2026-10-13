@@ -55,6 +55,7 @@ export default function useHandTracking({
     gestures = [],
     onGestureAction,
     onHandFrame,
+    enabled = true,
 }) {
     const dominantRef = useRef(dominant);
     const gesturesRef = useRef(gestures);
@@ -72,6 +73,14 @@ export default function useHandTracking({
     }, [gestures, onGestureAction, onHandFrame]);
 
     useEffect(() => {
+        if (!enabled) {
+            onResult(null);
+            onStatus("Камера приостановлена в настройках");
+            handFrameRef.current?.([]);
+            player.releaseAll();
+            return undefined;
+        }
+
         let landmarker;
         let stream;
         let rafId;
@@ -400,5 +409,5 @@ export default function useHandTracking({
             cancelled = true;
             cleanupResources();
         };
-    }, [videoRef, canvasRef, player, onResult, onStatus, retryToken, cameraFacing]);
+    }, [videoRef, canvasRef, player, onResult, onStatus, retryToken, cameraFacing, enabled]);
 }
