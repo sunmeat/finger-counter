@@ -1,72 +1,64 @@
+.instrument-picker { position: relative; min-width: 280px; max-width: 100%; z-index: 30; }
 .instrument-select {
-    display: inline-flex;
-    align-items: center;
-    gap: 11px;
-    min-width: 280px;
-    max-width: 100%;
-    padding: 9px 12px;
-    border: 1px solid var(--line);
-    border-radius: 15px;
-    background:
-        radial-gradient(ellipse at 0 0, color-mix(in srgb, var(--note) 10%, transparent), transparent 72%),
-        var(--panel);
-    color: var(--muted);
-    box-shadow: inset 0 1px 0 #ffffff08, 0 8px 24px #0002;
-    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px;
+    padding: 10px 14px; text-align: left; border: 1px solid var(--line); border-radius: 17px;
+    background: radial-gradient(ellipse at 0 0, color-mix(in srgb, var(--note) 12%, transparent), transparent 70%), var(--panel);
+    color: var(--text); box-shadow: inset 0 1px 0 #ffffff09, 0 8px 24px #0002;
+    cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
-.instrument-select:focus-within {
+.instrument-select:hover, .instrument-picker.is-open .instrument-select {
     border-color: color-mix(in srgb, var(--note) 65%, var(--line));
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--note) 12%, transparent), 0 8px 24px #0002;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--note) 10%, transparent), 0 12px 30px #0003;
 }
-.instrument-select-icon {
-    display: grid;
-    place-items: center;
-    flex: 0 0 34px;
-    width: 34px;
-    height: 34px;
-    border: 1px solid color-mix(in srgb, var(--note) 28%, var(--line));
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--note) 10%, var(--panel));
-    color: var(--note);
+.instrument-select-art {
+    display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px;
+    border: 1px solid color-mix(in srgb, var(--note) 25%, var(--line)); border-radius: 13px;
+    background: color-mix(in srgb, var(--note) 9%, var(--panel)); font-size: 25px;
 }
-.instrument-select-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
-.instrument-select-caption {
-    color: var(--muted);
-    font-size: .64rem;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: .13em;
-    text-transform: uppercase;
+.instrument-select-copy { display: grid; gap: 5px; flex: 1; min-width: 0; }
+.instrument-select-caption { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .61rem; font-weight: 850; line-height: 1; letter-spacing: .12em; }
+.instrument-select-count { display: inline-grid; place-items: center; min-width: 21px; height: 18px; padding: 0 5px; border: 1px solid var(--line); border-radius: 6px; color: var(--note); font-size: .63rem; letter-spacing: 0; }
+.instrument-select-current { overflow: hidden; color: var(--text); font: 750 .91rem/1.25 var(--sans); text-overflow: ellipsis; white-space: nowrap; }
+.instrument-select-chevron { display: grid; place-items: center; flex: 0 0 27px; width: 27px; height: 27px; border: 1px solid var(--line); border-radius: 9px; color: var(--note); transition: transform .18s ease, background .18s ease; }
+.instrument-select-chevron span { width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); }
+.instrument-picker.is-open .instrument-select-chevron { transform: rotate(180deg); background: color-mix(in srgb, var(--note) 10%, var(--panel)); }
+.instrument-picker-backdrop { position: fixed; inset: 0; z-index: 1; border: 0; background: #02060bb0; backdrop-filter: blur(3px); cursor: default; }
+.instrument-picker-menu {
+    position: absolute; z-index: 2; top: calc(100% + 10px); right: 0; width: min(650px, calc(100vw - 28px));
+    max-height: min(72vh, 700px); overflow: auto; padding: 18px;
+    border: 1px solid color-mix(in srgb, var(--note) 24%, var(--line)); border-radius: 22px;
+    background: linear-gradient(145deg, #18222d 0%, #0d131b 75%); color: #f3f6f8;
+    box-shadow: 0 28px 90px #0009, inset 0 1px 0 #ffffff0c;
+    animation: instrument-menu-in .16s ease-out;
 }
-.instrument-select select {
-    width: 100%;
-    min-width: 0;
-    padding: 0 22px 0 0;
-    border: 0;
-    outline: 0;
-    appearance: none;
-    background: transparent;
-    color: var(--text);
-    font: 700 .92rem/1.25 var(--sans);
-    cursor: pointer;
+.instrument-picker-heading { display: flex; justify-content: space-between; align-items: end; gap: 12px; padding: 2px 2px 15px; border-bottom: 1px solid #ffffff13; }
+.instrument-picker-eyebrow { color: var(--note); font-size: .62rem; font-weight: 850; letter-spacing: .15em; }
+.instrument-picker-heading h2 { margin: 5px 0 0; color: #f6f8fb; font: 750 1.3rem/1.1 var(--sans); letter-spacing: -.03em; }
+.instrument-picker-total { padding: 6px 9px; border: 1px solid #ffffff18; border-radius: 8px; color: #b4c0cc; font-size: .73rem; white-space: nowrap; }
+.instrument-picker-group { padding-top: 17px; }
+.instrument-picker-group h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: #b9c5d0; font-size: .77rem; font-weight: 800; letter-spacing: .015em; }
+.instrument-picker-group h3 > span:first-child { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid #ffffff12; border-radius: 8px; background: #ffffff07; font-size: 16px; }
+.instrument-picker-group h3 > span:last-child { margin-left: auto; color: #8494a4; font: 700 .68rem var(--sans); }
+.instrument-picker-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.instrument-option {
+    position: relative; display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 63px; padding: 9px;
+    border: 1px solid #ffffff12; border-radius: 13px; background: #ffffff04; color: #dce4ec; text-align: left;
+    font: 600 .78rem/1.25 var(--sans); cursor: pointer; transition: transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
-.instrument-select select option,
-.instrument-select select optgroup { background: #111923; color: #f3f6f8; }
-.instrument-select select:focus-visible { outline: 0; }
-.instrument-select-count {
-    display: grid;
-    place-items: center;
-    min-width: 27px;
-    height: 24px;
-    padding: 0 6px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    color: var(--note);
-    font: 800 .72rem/1 var(--sans);
-    font-variant-numeric: tabular-nums;
+.instrument-option:hover { transform: translateY(-2px); border-color: #ffffff30; background: #ffffff0b; }
+.instrument-option.is-selected { border-color: color-mix(in srgb, var(--note) 70%, transparent); background: color-mix(in srgb, var(--note) 12%, #101923); color: #fff; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--note) 16%, transparent); }
+.instrument-option-art { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(145deg, #ffffff10, #ffffff03); font-size: 23px; filter: saturate(.88); }
+.instrument-option.is-selected .instrument-option-art { background: color-mix(in srgb, var(--note) 14%, #ffffff05); }
+.instrument-option-name { min-width: 0; overflow-wrap: anywhere; }
+.instrument-option-check { position: absolute; top: 5px; right: 7px; color: var(--note); font-size: .7rem; font-weight: 900; }
+.instrument-option:focus-visible, .instrument-select:focus-visible { outline: 2px solid var(--note); outline-offset: 3px; }
+@keyframes instrument-menu-in { from { opacity: 0; transform: translateY(-5px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-width: 680px) {
+    .instrument-picker { width: 100%; min-width: 0; }
+    .instrument-picker-menu { position: fixed; top: 50%; left: 50%; right: auto; width: calc(100vw - 20px); max-height: 82vh; transform: translate(-50%, -50%); padding: 13px; border-radius: 18px; }
+    .instrument-picker-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .instrument-option { min-height: 58px; gap: 8px; padding: 7px; font-size: .74rem; }
+    .instrument-option-art { flex-basis: 32px; width: 32px; height: 32px; font-size: 20px; }
 }
-.instrument-select-chevron { flex: 0 0 auto; color: var(--muted); pointer-events: none; }
-@media (max-width: 600px) {
-    .instrument-select { width: 100%; min-width: 0; }
-    .instrument-select-copy { flex: 1; }
-}
+@media (max-width: 360px) { .instrument-picker-grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .instrument-picker *, .instrument-picker { animation: none !important; transition: none !important; } }
