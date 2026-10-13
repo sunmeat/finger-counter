@@ -12,7 +12,7 @@ import CurrentSound from "./stage/CurrentSound.jsx";
 import "./styles/TrainerScreen.css";
 
 const PROGRESS_KEY = "aerodion.trainer.progress.v1";
-const WARMUP_ATTEMPTS = 3;
+const ATTEMPTS_PER_TARGET = 3;
 const FINGER_NAMES = ["Большой", "Указательный", "Средний", "Безымянный", "Мизинец"];
 const NATURAL_NOTES = [60, 62, 64, 65, 67, 69, 71];
 const EASY_CHORDS = CHORD_GESTURES.filter((chord) => ["мажор", "минор"].includes(chord.name));
@@ -26,24 +26,21 @@ function readProgress() {
         return {
             attempts: Number(saved.attempts) || 0,
             correct: Number(saved.correct) || 0,
-            warmup: Math.min(WARMUP_ATTEMPTS, Number(saved.warmup) || 0),
             completed: Number(saved.completed) || 0,
             streak: Number(saved.streak) || 0,
             bestStreak: Number(saved.bestStreak) || 0,
         };
     } catch {
-        return { attempts: 0, correct: 0, warmup: 0, completed: 0, streak: 0, bestStreak: 0 };
+        return { attempts: 0, correct: 0, completed: 0, streak: 0, bestStreak: 0 };
     }
 }
 
 function recordAttempt(current, correct) {
-    const warmingUp = current.warmup < WARMUP_ATTEMPTS;
     const streak = correct ? current.streak + 1 : 0;
     return {
         ...current,
-        warmup: Math.min(WARMUP_ATTEMPTS, current.warmup + 1),
-        attempts: current.attempts + Number(!warmingUp),
-        correct: current.correct + Number(!warmingUp && correct),
+        attempts: current.attempts + 1,
+        correct: current.correct + Number(correct),
         streak,
         bestStreak: correct ? Math.max(current.bestStreak, streak) : current.bestStreak,
     };
@@ -99,6 +96,8 @@ export default function TrainerScreen(props) {
     const [task, setTask] = useState(() => createTask("chords", "easy"));
     const [sequenceIndex, setSequenceIndex] = useState(0);
     const [solved, setSolved] = useState(false);
+    const [exhausted, setExhausted] = useState(false);
+    const [attemptsUsed, setAttemptsUsed] = useState(0);
     const [feedback, setFeedback] = useState({ type: "hint", text: "Покажи нужную комбинацию пальцев в камеру." });
     const [progress, setProgress] = useState(readProgress);
     const lastAttemptRef = useRef("");
@@ -127,11 +126,14 @@ export default function TrainerScreen(props) {
         setTask(createTask(mode, difficulty));
         setSequenceIndex(0);
         setSolved(false);
-        setFeedback({ type: "hint", text: "Новое задание готово. Покажи ответ обеими руками." });
+        setExhausted(false);
+        setAttemptsUsed(0);
+        lastAttemptRef.current = "";
+        setFeedback({ type: "hint", text: "Новое задание готово. У тебя есть три попытки." });
     }, [mode, difficulty]);
 
     useEffect(() => {
-        if (solved) return;
+        if (solved || exhausted) return;
         const expectedKind = mode === "notes" ? "note" : mode === "sequence" ? "sequence" : "chord";
         if (task.kind !== expectedKind || task.difficulty !== difficulty) return;
 
@@ -151,11 +153,19 @@ export default function TrainerScreen(props) {
             lastAttemptRef.current = signature;
 
             const correct = note.midi === task.targetMidi;
+            const attemptNumber = attemptsUsed + 1;
+            setAttemptsUsed(attemptNumber);
             setProgress((current) => recordAttempt(current, correct));
-            setFeedback(correct
-                ? { type: "success", text: "Верно! Это нота " + note.name + "." }
-                : { type: "error", text: "Распознана нота " + note.name + ". Попробуй ещё раз." });
-            if (correct) setSolved(true);
+
+            if (correct) {
+                setFeedback({ type: "success", text: "Верно! Это нота " + note.name + "." });
+                setSolved(true);
+            } else if (attemptNumber >= ATTEMPTS_PER_TARGET) {
+                setFeedback({ type: "error", text: "Попытки закончились. Правильная нота: " + task.label + ". Попробуй ещё раз." });
+                setExhausted(true);
+            } else {
+                setFeedback({ type: "error", text: "Распознана нота " + note.name + ". Осталось попыток: " + (ATTEMPTS_PER_TARGET - attemptNumber) + "." });
+            }
             return;
         }
 
@@ -170,10 +180,17 @@ export default function TrainerScreen(props) {
 
         const target = task.kind === "sequence" ? task.sequence[sequenceIndex] : task.target;
         const correct = note.midi === target.root && chord.mask === target.chordMask;
+        const attemptNumber = attemptsUsed + 1;
+        setAttemptsUsed(attemptNumber);
         setProgress((current) => recordAttempt(current, correct));
 
         if (!correct) {
-            setFeedback({ type: "error", text: "Сейчас звучит " + note.name + " " + chord.name + ". Сверься с заданием и попробуй ещё раз." });
+            if (attemptNumber >= ATTEMPTS_PER_TARGET) {
+                setFeedback({ type: "error", text: "Попытки закончились. Правильный ответ: " + target.label + ". Попробуй ещё раз." });
+                setExhausted(true);
+            } else {
+                setFeedback({ type: "error", text: "Сейчас звучит " + note.name + " " + chord.name + ". Осталось попыток: " + (ATTEMPTS_PER_TARGET - attemptNumber) + "." });
+            }
             return;
         }
 
@@ -185,13 +202,14 @@ export default function TrainerScreen(props) {
                 setFeedback({ type: "success", text: "Цепочка собрана целиком! Все четыре аккорда распознаны." });
             } else {
                 setSequenceIndex(nextIndex);
+                setAttemptsUsed(0);
                 setFeedback({ type: "success", text: "Верно! Аккорд " + (sequenceIndex + 1) + " из 4. Следующий уже ждёт." });
             }
         } else {
             setSolved(true);
             setFeedback({ type: "success", text: "Точно! Распознан аккорд " + target.label + "." });
         }
-    }, [result, dominant, mode, task, sequenceIndex, solved]);
+    }, [result, dominant, mode, task, sequenceIndex, solved, exhausted, attemptsUsed]);
 
 
     useEffect(() => {
@@ -227,11 +245,23 @@ export default function TrainerScreen(props) {
         setTask(createTask(mode, difficulty));
         setSequenceIndex(0);
         setSolved(false);
-        setFeedback({ type: "hint", text: "Новое задание. Покажи ответ в камеру." });
+        setExhausted(false);
+        setAttemptsUsed(0);
+        lastAttemptRef.current = "";
+        setFeedback({ type: "hint", text: "Новое задание. У тебя есть три попытки." });
+    };
+
+    const retryTask = () => {
+        setSequenceIndex(0);
+        setSolved(false);
+        setExhausted(false);
+        setAttemptsUsed(0);
+        lastAttemptRef.current = "";
+        setFeedback({ type: "hint", text: "Попробуй ещё раз. У тебя снова три попытки." });
     };
 
     const resetProgress = () => {
-        const empty = { attempts: 0, correct: 0, warmup: 0, completed: 0, streak: 0, bestStreak: 0 };
+        const empty = { attempts: 0, correct: 0, completed: 0, streak: 0, bestStreak: 0 };
         setProgress(empty);
         setFeedback({ type: "hint", text: "Прогресс сброшен. Начинаем с чистого листа." });
     };
@@ -272,7 +302,7 @@ export default function TrainerScreen(props) {
                                 ))}
                             </div>
                         </div>
-                        <div className="trainer-option-group">
+                        {mode !== "notes" && <div className="trainer-option-group">
                             <span className="trainer-label">Сложность</span>
                             <div className="trainer-segments">
                                 {[
@@ -283,7 +313,7 @@ export default function TrainerScreen(props) {
                                     <button key={value} type="button" className={difficulty === value ? "is-active" : ""} onClick={() => setDifficulty(value)}>{label}</button>
                                 ))}
                             </div>
-                        </div>
+                        </div>}
                     </div>
 
                     <section className="trainer-task" aria-live="polite">
@@ -339,13 +369,13 @@ export default function TrainerScreen(props) {
                                 </div>
                             </div>
                         </div>
-                        {progress.warmup < WARMUP_ATTEMPTS && <p className="trainer-warmup" role="status">Разминка: {progress.warmup} из {WARMUP_ATTEMPTS}. Первые три попытки не попадут в процент успеха.</p>}
+                        <p className="trainer-attempt-counter" role="status">Попытки: {attemptsUsed} из {ATTEMPTS_PER_TARGET}</p>
                         <div className={"trainer-feedback is-" + feedback.type} role="status">{feedback.text}</div>
-                        {solved && <button type="button" className="trainer-next" onClick={nextTask}>{task.kind === "sequence" ? "Новая последовательность →" : "Следующее задание →"}</button>}
+                        {(solved || exhausted) && <button type="button" className="trainer-next" onClick={exhausted ? retryTask : nextTask}>{exhausted ? "Повторить задание ↻" : task.kind === "sequence" ? "Новая последовательность →" : "Следующее задание →"}</button>}
                     </section>
 
                     <div className="trainer-stats">
-                        <div><strong>{accuracy === null ? "—" : accuracy + "%"}</strong><span>точность · после разминки</span></div>
+                        <div><strong>{accuracy === null ? "—" : accuracy + "%"}</strong><span>точность</span></div>
                         <div><strong>{progress.streak}</strong><span>серия сейчас</span></div>
                         <div><strong>{progress.bestStreak}</strong><span>лучшая серия</span></div>
                         <div><strong>{progress.completed}</strong><span>цепочек пройдено</span></div>
