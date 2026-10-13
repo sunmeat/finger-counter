@@ -80,7 +80,7 @@ function createChordTarget(difficulty) {
 
 function createTask(mode, difficulty) {
     if (mode === "notes") {
-        const note = pick(notePool(difficulty));
+        const note = pick(notePool("hard"));
         return { kind: "note", difficulty, targetMidi: note.midi, label: note.name, prompt: "Покажи ноту " + note.name };
     }
     if (mode === "sequence") {
