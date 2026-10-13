@@ -19,8 +19,8 @@ function pathForSection(section) {
 }
 
 export default function App() {
-    const app = usePianoApp();
     const [activeSection, setActiveSection] = useState(() => sectionFromPath(window.location.pathname));
+    const app = usePianoApp(activeSection !== "settings");
 
     const navigate = useCallback((section) => {
         const path = pathForSection(section);
