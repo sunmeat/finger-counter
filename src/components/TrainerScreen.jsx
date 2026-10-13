@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
-import { DrawingUtils, HandLandmarker } from "@mediapipe/tasks-vision";
 import {
     CHORD_GESTURES,
     NOTE_COMBINATIONS,
@@ -92,7 +91,7 @@ function createTask(mode, difficulty) {
 export default function TrainerScreen(props) {
     const { result, dominant, onCloseTrainer } = props;
     const trainerVideoRef = useRef(null);
-    const trainerCanvasRef = useRef(null);
+    const trainerCanvasRef = props.trainerCanvasRef;
     const [mode, setMode] = useState("chords");
     const [difficulty, setDifficulty] = useState("easy");
     const [task, setTask] = useState(() => createTask("chords", "easy"));
@@ -115,35 +114,6 @@ export default function TrainerScreen(props) {
             preview.srcObject = null;
         };
     }, [props.videoRef, props.cameraFacing, props.status]);
-
-    useEffect(() => {
-        const canvas = trainerCanvasRef.current;
-        const video = trainerVideoRef.current;
-        const ctx = canvas?.getContext("2d");
-        if (!canvas || !ctx || !video) return;
-
-        const width = video.videoWidth || 640;
-        const height = video.videoHeight || 480;
-        canvas.width = width;
-        canvas.height = height;
-        ctx.clearRect(0, 0, width, height);
-        if (!result?.hands?.length) return;
-
-        const styles = getComputedStyle(document.documentElement);
-        const noteColor = styles.getPropertyValue("--note").trim() || "#f0b44c";
-        const chordColor = styles.getPropertyValue("--chord").trim() || "#62cbd9";
-        const neutralColor = styles.getPropertyValue("--ivory").trim() || "#f1ecdf";
-        const inkColor = styles.getPropertyValue("--ink").trim() || "#101a23";
-        const drawing = new DrawingUtils(ctx);
-        const { noteSide: noteHandSide, chordSide: chordHandSide } = rolesFor(dominant);
-
-        result.hands.forEach((hand) => {
-            if (!hand.landmarks) return;
-            const color = hand.side === noteHandSide ? noteColor : hand.side === chordHandSide ? chordColor : neutralColor;
-            drawing.drawConnectors(hand.landmarks, HandLandmarker.HAND_CONNECTIONS, { color, lineWidth: 3 });
-            drawing.drawLandmarks(hand.landmarks, { color: inkColor, fillColor: color, lineWidth: 1.5, radius: 4 });
-        });
-    }, [result, dominant]);
 
     useEffect(() => {
         try {
