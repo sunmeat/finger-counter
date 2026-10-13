@@ -345,7 +345,8 @@
     background: var(--ebony);
 }
 
-.trainer-stage video {
+.trainer-stage video,
+.trainer-stage canvas {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -354,7 +355,13 @@
     transform: scaleX(-1);
 }
 
-.trainer-stage-back-camera video {
+.trainer-stage canvas {
+    z-index: 1;
+    pointer-events: none;
+}
+
+.trainer-stage-back-camera video,
+.trainer-stage-back-camera canvas {
     transform: none;
 }
 
@@ -729,4 +736,11 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .trainer-celebration-backdrop, .trainer-celebration, .trainer-celebration-icon, .trainer-confetti i { animation: none !important; }
+}
+
+
+@media (hover: hover) and (pointer: fine) {
+    .trainer-camera-toggle {
+        display: none;
+    }
 }
