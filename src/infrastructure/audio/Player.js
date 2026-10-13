@@ -57,17 +57,6 @@ function createElectric() {
     return synth;
 }
 
-function createStringEnsemble() {
-    const synth = polySynth(Tone.Synth, {
-        oscillator: { type: "fatsawtooth", count: 3, spread: 16 },
-        envelope: { attack: 0.32, decay: 0.4, sustain: 0.78, release: 1.8 },
-    }, -15);
-    const filter = new Tone.Filter(3200, "lowpass", -12);
-    synth.disconnect();
-    synth.chain(filter, Tone.getDestination());
-    return synth;
-}
-
 function createCelesta() {
     const synth = polySynth(Tone.FMSynth, {
         harmonicity: 3.5,
@@ -97,25 +86,6 @@ function createNylonPluck() {
     const filter = new Tone.Filter(3200, "lowpass", -12);
     synth.disconnect();
     synth.chain(filter, Tone.getDestination());
-    return synth;
-}
-
-function createAccordion() {
-    const synth = polySynth(Tone.FMSynth, {
-        harmonicity: 1,
-        modulationIndex: 2.6,
-        oscillator: { type: "sine" },
-        envelope: { attack: 0.025, decay: 0.18, sustain: 0.88, release: 0.45 },
-        modulation: { type: "square" },
-        modulationEnvelope: { attack: 0.01, decay: 0.16, sustain: 0.55, release: 0.3 },
-    }, -15);
-
-    const filter = new Tone.Filter(4800, "lowpass", -12);
-    const chorus = new Tone.Chorus(1.8, 2.8, 0.32).start();
-    const tremolo = new Tone.Tremolo(5.3, 0.16).start();
-
-    synth.disconnect();
-    synth.chain(filter, chorus, tremolo, Tone.getDestination());
     return synth;
 }
 
@@ -183,18 +153,125 @@ function createDigitalPiano() {
     }, -11);
 }
 
-function createClavinet() {
-    return polySynth(Tone.Synth, {
-        oscillator: { type: "square" },
-        envelope: { attack: 0.002, decay: 0.18, sustain: 0.12, release: 0.22 },
-    }, -16);
+
+function createPluck(oscillator, decay, volume = -11, cutoff = 4200, release = 0.45) {
+    const synth = polySynth(Tone.Synth, {
+        oscillator: { type: oscillator },
+        envelope: { attack: 0.003, decay, sustain: 0.025, release },
+    }, volume);
+    const filter = new Tone.Filter(cutoff, "lowpass");
+    synth.disconnect();
+    synth.chain(filter, Tone.getDestination());
+    return synth;
 }
 
-function createDeepBass() {
-    return polySynth(Tone.Synth, {
-        oscillator: { type: "triangle" },
-        envelope: { attack: 0.025, decay: 0.3, sustain: 0.72, release: 0.8 },
-    }, -13);
+function createBreath(oscillator, attack, volume = -12, cutoff = 5200, vibrato = false) {
+    const synth = polySynth(Tone.Synth, {
+        oscillator: { type: oscillator },
+        envelope: { attack, decay: 0.12, sustain: 0.82, release: 0.35 },
+    }, volume);
+    const filter = new Tone.Filter(cutoff, "lowpass");
+    if (vibrato) {
+        const lfo = new Tone.Vibrato(5.1, 0.08);
+        synth.disconnect();
+        synth.chain(filter, lfo, Tone.getDestination());
+    } else {
+        synth.disconnect();
+        synth.chain(filter, Tone.getDestination());
+    }
+    return synth;
+}
+
+function createMetallic(harmonicity, modulationIndex, decay, volume = -12) {
+    return polySynth(Tone.FMSynth, {
+        harmonicity,
+        modulationIndex,
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.002, decay, sustain: 0.035, release: Math.min(1.8, decay) },
+        modulation: { type: "sine" },
+        modulationEnvelope: { attack: 0.001, decay: decay * 0.42, sustain: 0.02, release: 0.25 },
+    }, volume);
+}
+
+function createUkulele() {
+    return createPluck("triangle", 0.38, -8, 3600, 0.3);
+}
+
+function createAcousticGuitar() {
+    return createPluck("triangle", 0.62, -8, 3000, 0.55);
+}
+
+function createKalimba() {
+    return createMetallic(3.2, 5.5, 0.85, -9);
+}
+
+function createHarp() {
+    return createPluck("sine", 1.15, -10, 5200, 1.1);
+}
+
+function createMusicBox() {
+    return createMetallic(5.2, 8, 1.35, -11);
+}
+
+function createHandpan() {
+    return createMetallic(1.48, 2.4, 1.7, -10);
+}
+
+function createTongueDrum() {
+    return createMetallic(2.7, 3.2, 1.25, -10);
+}
+
+function createKoto() {
+    return createPluck("sawtooth", 0.45, -13, 2100, 0.65);
+}
+
+function createShamisen() {
+    return createPluck("square", 0.3, -13, 1900, 0.35);
+}
+
+function createSitar() {
+    const synth = createPluck("sawtooth", 0.72, -14, 2600, 0.8);
+    return synth;
+}
+
+function createBanjo() {
+    return createPluck("square", 0.24, -10, 3400, 0.25);
+}
+
+function createMandolin() {
+    return createPluck("triangle", 0.28, -10, 3900, 0.32);
+}
+
+function createSopilka() {
+    return createBreath("sine", 0.045, -9, 3900, true);
+}
+
+function createPanFlute() {
+    return createBreath("sine", 0.075, -11, 3100, false);
+}
+
+function createRecorder() {
+    return createBreath("triangle", 0.025, -10, 4400, false);
+}
+
+function createClarinet() {
+    return createBreath("square", 0.06, -13, 2500, true);
+}
+
+function createOboe() {
+    return createBreath("sawtooth", 0.08, -14, 2800, true);
+}
+
+function createSaxophone() {
+    return createBreath("sawtooth", 0.055, -12, 3300, true);
+}
+
+function createTrumpet() {
+    return createBreath("sawtooth", 0.035, -13, 3600, false);
+}
+
+function createFrenchHorn() {
+    return createBreath("triangle", 0.16, -14, 1800, true);
 }
 
 function createInstrument(id) {
@@ -205,16 +282,12 @@ function createInstrument(id) {
             return createAcousticPiano();
         case "electric":
             return createElectric();
-        case "strings":
-            return createStringEnsemble();
         case "celesta":
             return createCelesta();
         case "marimba":
             return createMarimba();
         case "nylon":
             return createNylonPluck();
-        case "accordion":
-            return createAccordion();
         case "vibraphone":
             return createVibraphone();
         case "soft-pad":
@@ -231,10 +304,46 @@ function createInstrument(id) {
             return createChoir();
         case "digital-piano":
             return createDigitalPiano();
-        case "clavinet":
-            return createClavinet();
-        case "deep-bass":
-            return createDeepBass();
+        case "sopilka":
+            return createSopilka();
+        case "ukulele":
+            return createUkulele();
+        case "acoustic-guitar":
+            return createAcousticGuitar();
+        case "kalimba":
+            return createKalimba();
+        case "harp":
+            return createHarp();
+        case "music-box":
+            return createMusicBox();
+        case "handpan":
+            return createHandpan();
+        case "tongue-drum":
+            return createTongueDrum();
+        case "koto":
+            return createKoto();
+        case "shamisen":
+            return createShamisen();
+        case "sitar":
+            return createSitar();
+        case "banjo":
+            return createBanjo();
+        case "mandolin":
+            return createMandolin();
+        case "pan-flute":
+            return createPanFlute();
+        case "recorder":
+            return createRecorder();
+        case "clarinet":
+            return createClarinet();
+        case "oboe":
+            return createOboe();
+        case "saxophone":
+            return createSaxophone();
+        case "trumpet":
+            return createTrumpet();
+        case "french-horn":
+            return createFrenchHorn();
         default:
             return createAcousticPiano();
     }
