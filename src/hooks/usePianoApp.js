@@ -19,7 +19,7 @@ function readSettings() {
     }
 }
 
-export function usePianoApp() {
+export function usePianoApp(trackingEnabled = true) {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const trainerCanvasRef = useRef(null);
@@ -135,7 +135,7 @@ export function usePianoApp() {
 
     useHandTracking({
         videoRef, canvasRef, dominant, player: playerRef.current, onResult, onStatus,
-        retryToken, cameraFacing, gestures, onGestureAction, onHandFrame,
+        retryToken, cameraFacing, gestures, onGestureAction, onHandFrame, enabled: trackingEnabled,
     });
 
     return {
