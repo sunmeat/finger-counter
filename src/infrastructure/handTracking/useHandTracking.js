@@ -54,10 +54,12 @@ export default function useHandTracking({
     cameraFacing = "user",
     gestures = [],
     onGestureAction,
+    onHandFrame,
 }) {
     const dominantRef = useRef(dominant);
     const gesturesRef = useRef(gestures);
     const gestureActionRef = useRef(onGestureAction);
+    const handFrameRef = useRef(onHandFrame);
 
     useEffect(() => {
         dominantRef.current = dominant;
@@ -66,7 +68,8 @@ export default function useHandTracking({
     useEffect(() => {
         gesturesRef.current = gestures;
         gestureActionRef.current = onGestureAction;
-    }, [gestures, onGestureAction]);
+        handFrameRef.current = onHandFrame;
+    }, [gestures, onGestureAction, onHandFrame]);
 
     useEffect(() => {
         let landmarker;
@@ -260,6 +263,7 @@ export default function useHandTracking({
                             }));
 
                             fixSides(hands);
+                            handFrameRef.current?.(hands.map((hand, index) => ({ landmarks: res.landmarks[index], side: hand.side })));
 
                             const activeSides = new Set(hands.map((hand) => hand.side));
                             for (const side of handHistory.keys()) {
@@ -351,6 +355,7 @@ export default function useHandTracking({
                                 });
                             }
                         } else {
+                            handFrameRef.current?.([]);
                             activeActionKey = "";
                             resetHandHistory();
 
