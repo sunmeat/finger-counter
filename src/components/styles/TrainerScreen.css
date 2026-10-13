@@ -614,14 +614,12 @@
     font-weight: 500;
 }
 
-.trainer-warmup {
+.trainer-attempt-counter {
     margin: 0;
-    padding: 10px 12px;
-    border: 1px solid #f0b44c55;
-    border-radius: 9px;
-    background: #f0b44c0d;
-    color: var(--note);
-    font-size: .8rem;
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 420px) {
