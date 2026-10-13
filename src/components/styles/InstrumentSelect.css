@@ -1,1 +1,72 @@
-.instrument-select{display:inline-flex;align-items:center;gap:9px;padding:4px 8px 4px 14px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);white-space:nowrap}.instrument-select span{font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em}.instrument-select select{min-width:230px;padding:8px 30px 8px 12px;border:0;border-radius:999px;background:var(--text);color:var(--ink);font:600 .9rem/1 var(--sans);cursor:pointer}.instrument-select select:focus-visible{outline:3px solid var(--note);outline-offset:2px}@media(max-width:600px){.instrument-select{width:100%}.instrument-select select{min-width:0;flex:1}}
+.instrument-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 280px;
+    max-width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background:
+        radial-gradient(ellipse at 0 0, color-mix(in srgb, var(--note) 10%, transparent), transparent 72%),
+        var(--panel);
+    color: var(--muted);
+    box-shadow: inset 0 1px 0 #ffffff08, 0 8px 24px #0002;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.instrument-select:focus-within {
+    border-color: color-mix(in srgb, var(--note) 65%, var(--line));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--note) 12%, transparent), 0 8px 24px #0002;
+}
+.instrument-select-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border: 1px solid color-mix(in srgb, var(--note) 28%, var(--line));
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--note) 10%, var(--panel));
+    color: var(--note);
+}
+.instrument-select-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
+.instrument-select-caption {
+    color: var(--muted);
+    font-size: .64rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+.instrument-select select {
+    width: 100%;
+    min-width: 0;
+    padding: 0 22px 0 0;
+    border: 0;
+    outline: 0;
+    appearance: none;
+    background: transparent;
+    color: var(--text);
+    font: 700 .92rem/1.25 var(--sans);
+    cursor: pointer;
+}
+.instrument-select select option,
+.instrument-select select optgroup { background: #111923; color: #f3f6f8; }
+.instrument-select select:focus-visible { outline: 0; }
+.instrument-select-count {
+    display: grid;
+    place-items: center;
+    min-width: 27px;
+    height: 24px;
+    padding: 0 6px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--note);
+    font: 800 .72rem/1 var(--sans);
+    font-variant-numeric: tabular-nums;
+}
+.instrument-select-chevron { flex: 0 0 auto; color: var(--muted); pointer-events: none; }
+@media (max-width: 600px) {
+    .instrument-select { width: 100%; min-width: 0; }
+    .instrument-select-copy { flex: 1; }
+}
