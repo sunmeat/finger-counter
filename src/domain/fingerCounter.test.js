@@ -212,4 +212,20 @@ describe("countFingers", () => {
             fingers: [true, false, true, false, false],
         });
     });
+    it("counts every possible combination of extended fingers", () => {
+        for (let mask = 0; mask < 32; mask += 1) {
+            const extended = [0, 1, 2, 3, 4].filter(
+                (index) => mask & (1 << index)
+            );
+            const fingers = [0, 1, 2, 3, 4].map((index) =>
+                extended.includes(index)
+            );
+            const result = countFingers(makeHand(extended));
+
+            expect(result).toEqual({
+                count: fingers.filter(Boolean).length,
+                fingers,
+            });
+        }
+    });
 });
