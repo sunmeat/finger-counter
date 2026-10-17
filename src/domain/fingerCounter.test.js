@@ -126,4 +126,12 @@ describe("countFingers", () => {
             fingers: [true, false, true, true, true],
         });
     });
+    it("counts the thumb and pinky when the three middle fingers are curled", () => {
+        const result = countFingers(makeHand([0, 4]));
+
+        expect(result).toEqual({
+            count: 2,
+            fingers: [true, false, false, false, true],
+        });
+    });
 });
