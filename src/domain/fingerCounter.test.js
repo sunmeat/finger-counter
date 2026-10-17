@@ -178,4 +178,14 @@ describe("countFingers", () => {
             fingers: [true, true, true, true, true],
         });
     });
+    it("ignores landmarks that are not used for finger angles", () => {
+        const hand = makeHand([1, 2]);
+        const expected = countFingers(hand);
+
+        [0, 1, 8, 12, 16, 20].forEach((index) => {
+            hand[index] = { x: 100 + index, y: -100, z: 50 };
+        });
+
+        expect(countFingers(hand)).toEqual(expected);
+    });
 });
