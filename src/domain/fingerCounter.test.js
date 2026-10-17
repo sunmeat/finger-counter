@@ -194,4 +194,13 @@ describe("countFingers", () => {
         expect(result.count).toBe(result.fingers.filter(Boolean).length);
         expect(result.count).toBe(3);
     });
+    it("treats a zero-length thumb segment as curled", () => {
+        const hand = makeHand([0, 1, 2]);
+        hand[3] = { ...hand[2] };
+
+        expect(countFingers(hand)).toEqual({
+            count: 2,
+            fingers: [false, true, true, false, false],
+        });
+    });
 });
