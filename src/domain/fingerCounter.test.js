@@ -70,4 +70,12 @@ describe("countFingers", () => {
 
         expect(countFingers(rightHand)).toEqual(countFingers(leftHand));
     });
+    it("counts only the thumb when the other fingers are curled", () => {
+        const result = countFingers(makeHand([0]));
+
+        expect(result).toEqual({
+            count: 1,
+            fingers: [true, false, false, false, false],
+        });
+    });
 });
