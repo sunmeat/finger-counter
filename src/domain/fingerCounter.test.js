@@ -150,4 +150,14 @@ describe("countFingers", () => {
             fingers: [true, false, true, false, true],
         });
     });
+    it("preserves a gesture when all landmarks are translated", () => {
+        const hand = makeHand([0, 2, 4]);
+        const translated = hand.map(({ x, y, z }) => ({
+            x: x + 3,
+            y: y - 7,
+            z: z + 2,
+        }));
+
+        expect(countFingers(translated)).toEqual(countFingers(hand));
+    });
 });
