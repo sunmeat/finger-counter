@@ -188,4 +188,10 @@ describe("countFingers", () => {
 
         expect(countFingers(hand)).toEqual(expected);
     });
+    it("keeps count equal to the number of extended fingers", () => {
+        const result = countFingers(makeHand([0, 2, 4]));
+
+        expect(result.count).toBe(result.fingers.filter(Boolean).length);
+        expect(result.count).toBe(3);
+    });
 });
