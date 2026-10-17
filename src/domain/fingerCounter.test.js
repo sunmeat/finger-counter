@@ -228,4 +228,13 @@ describe("countFingers", () => {
             });
         }
     });
+    it("returns the same result for repeated calls with unchanged landmarks", () => {
+        const hand = makeHand([0, 2, 3]);
+
+        expect(countFingers(hand)).toEqual(countFingers(hand));
+        expect(countFingers(hand)).toEqual({
+            count: 3,
+            fingers: [true, false, true, true, false],
+        });
+    });
 });
