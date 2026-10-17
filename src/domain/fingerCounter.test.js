@@ -170,4 +170,12 @@ describe("countFingers", () => {
 
         expect(countFingers(scaled)).toEqual(countFingers(hand));
     });
+    it("counts a mirrored open palm the same way", () => {
+        const hand = makeHand([0, 1, 2, 3, 4]);
+
+        expect(countFingers(mirrorHand(hand))).toEqual({
+            count: 5,
+            fingers: [true, true, true, true, true],
+        });
+    });
 });
