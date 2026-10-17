@@ -203,4 +203,13 @@ describe("countFingers", () => {
             fingers: [false, true, true, false, false],
         });
     });
+    it("treats a zero-length index segment as curled", () => {
+        const hand = makeHand([0, 1, 2]);
+        hand[7] = { ...hand[6] };
+
+        expect(countFingers(hand)).toEqual({
+            count: 2,
+            fingers: [true, false, true, false, false],
+        });
+    });
 });
