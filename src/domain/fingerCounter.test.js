@@ -160,4 +160,14 @@ describe("countFingers", () => {
 
         expect(countFingers(translated)).toEqual(countFingers(hand));
     });
+    it("preserves a gesture when all landmarks are scaled uniformly", () => {
+        const hand = makeHand([0, 1, 3]);
+        const scaled = hand.map(({ x, y, z }) => ({
+            x: x * 4,
+            y: y * 4,
+            z: z * 4,
+        }));
+
+        expect(countFingers(scaled)).toEqual(countFingers(hand));
+    });
 });
