@@ -94,4 +94,12 @@ describe("countFingers", () => {
             fingers: [false, false, true, false, false],
         });
     });
+    it("counts only the ring finger when the others are curled", () => {
+        const result = countFingers(makeHand([3]));
+
+        expect(result).toEqual({
+            count: 1,
+            fingers: [false, false, false, true, false],
+        });
+    });
 });
