@@ -237,4 +237,13 @@ describe("countFingers", () => {
             fingers: [true, false, true, true, false],
         });
     });
+
+    it("counts the thumb and index finger together", () => {
+        const result = countFingers(makeHand([0, 1]));
+
+        expect(result).toEqual({
+            count: 2,
+            fingers: [true, true, false, false, false],
+        });
+    });
 });
