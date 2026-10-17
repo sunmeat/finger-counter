@@ -134,4 +134,12 @@ describe("countFingers", () => {
             fingers: [true, false, false, false, true],
         });
     });
+    it("counts non-adjacent index and ring fingers", () => {
+        const result = countFingers(makeHand([1, 3]));
+
+        expect(result).toEqual({
+            count: 2,
+            fingers: [false, true, false, true, false],
+        });
+    });
 });
