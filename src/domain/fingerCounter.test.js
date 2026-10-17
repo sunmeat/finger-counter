@@ -142,4 +142,12 @@ describe("countFingers", () => {
             fingers: [false, true, false, true, false],
         });
     });
+    it("handles landmarks without z coordinates", () => {
+        const hand = makeHand([0, 2, 4]).map(({ x, y }) => ({ x, y }));
+
+        expect(countFingers(hand)).toEqual({
+            count: 3,
+            fingers: [true, false, true, false, true],
+        });
+    });
 });
