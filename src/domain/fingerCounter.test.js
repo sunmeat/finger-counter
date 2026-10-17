@@ -86,4 +86,12 @@ describe("countFingers", () => {
             fingers: [false, true, false, false, false],
         });
     });
+    it("counts only the middle finger when the others are curled", () => {
+        const result = countFingers(makeHand([2]));
+
+        expect(result).toEqual({
+            count: 1,
+            fingers: [false, false, true, false, false],
+        });
+    });
 });
