@@ -110,4 +110,12 @@ describe("countFingers", () => {
             fingers: [false, false, false, false, true],
         });
     });
+    it("counts four fingers when the thumb is curled", () => {
+        const result = countFingers(makeHand([1, 2, 3, 4]));
+
+        expect(result).toEqual({
+            count: 4,
+            fingers: [false, true, true, true, true],
+        });
+    });
 });
