@@ -22,7 +22,7 @@ function makeHand(extended = []) {
         landmarks[dip] = {
             x: extended.includes(index) ? 2 : 0.5,
             y: index * 0.1,
-            z: 0.5,
+            z: 0.1,
         };
     });
 
