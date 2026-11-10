@@ -5,7 +5,7 @@ import "../styles/AppHeader.css";
 
 export default function AppHeader(props) {
     const {
-        title = "Музыка на пальцах",
+        title = "Музика на пальцях",
         lede,
         instrument,
         onPickInstrument,
@@ -24,10 +24,10 @@ export default function AppHeader(props) {
                 <p className="lede">{lede}</p>
             </div>
             <div className="head-controls">
-                <nav className="section-nav" aria-label="Основные разделы">
-                    <button type="button" className={activeSection === "piano" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "piano" ? "page" : undefined} onClick={onOpenPiano}>🏠 Главная</button>
-                    <button type="button" className={activeSection === "learn" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "learn" ? "page" : undefined} onClick={onOpenTrainer}>📚 Обучение</button>
-                    <button type="button" className={activeSection === "settings" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "settings" ? "page" : undefined} onClick={onOpenSettings}>⚙ Настройки</button>
+                <nav className="section-nav" aria-label="Основні розділи">
+                    <button type="button" className={activeSection === "piano" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "piano" ? "page" : undefined} onClick={onOpenPiano}>🏠 Головна</button>
+                    <button type="button" className={activeSection === "learn" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "learn" ? "page" : undefined} onClick={onOpenTrainer}>📚 Навчання</button>
+                    <button type="button" className={activeSection === "settings" ? "section-nav-link is-active" : "section-nav-link"} aria-current={activeSection === "settings" ? "page" : undefined} onClick={onOpenSettings}>⚙ Налаштування</button>
                 </nav>
                 <div className="toolbar">
                     <InstrumentSelect options={INSTRUMENTS} value={instrument} onChange={onPickInstrument} />

@@ -1,4 +1,4 @@
-const CACHE = "finger-counter-v2";
+const CACHE = "finger-counter-uk-v3";
 
 self.addEventListener("install", (event) => {
     event.waitUntil(

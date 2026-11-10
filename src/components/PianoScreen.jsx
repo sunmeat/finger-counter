@@ -21,7 +21,7 @@ function chordIsActive(chord, mask) {
 function createRows(items, type, mask) {
     return items.map((item) => ({
         key: type + "-" + item.mask,
-        finger: item.fingers.length ? item.fingers.join(" + ") : "Без пальцев",
+        finger: item.fingers.length ? item.fingers.join(" + ") : "Без пальців",
         value: item.name,
         plain: type === "chord" && item.mask === 0,
         active: type === "chord" ? chordIsActive(item, mask) : item.mask === mask,
@@ -34,14 +34,14 @@ function panelFor(side, noteSide, noteHand, chordHand, noteRows, chordRows, onRo
     return {
         side,
         tone: isNote ? "note" : "chord",
-        title: side === "left" ? "Левая рука" : "Правая рука",
-        role: isNote ? "Задаёт основную ноту" : "Выбирает аккорд",
+        title: side === "left" ? "Ліва рука" : "Права рука",
+        role: isNote ? "Задає основну ноту" : "Вибирає акорд",
         seen: Boolean(isNote ? noteHand : chordHand),
         rows: isNote ? noteRows : chordRows,
         onRowClick,
         note: isNote
-            ? "Каждая комбинация пальцев соответствует одной ноте."
-            : "Каждая комбинация пальцев соответствует отдельному аккорду.",
+            ? "Кожна комбінація пальців відповідає одній ноті."
+            : "Кожна комбінація пальців відповідає окремому акорду.",
     };
 }
 
@@ -75,7 +75,7 @@ export default function PianoScreen(props) {
         onPlayPreview?.(midi);
     };
 
-    const lede = `${noteSide === "left" ? "Левая" : "Правая"} рука задаёт основную ноту, ${chordSide === "left" ? "левая" : "правая"} выбирает аккорд.`;
+    const lede = `${noteSide === "left" ? "Ліва" : "Права"} рука задає основну ноту, ${chordSide === "left" ? "ліва" : "права"} вибирає акорд.`;
 
     return (
         <main className="app">

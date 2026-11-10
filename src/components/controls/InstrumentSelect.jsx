@@ -2,19 +2,19 @@ import { useMemo, useState } from "react";
 import "../styles/InstrumentSelect.css";
 
 const GROUP_ORDER = [
-    "Клавишные",
-    "Струнные",
-    "Духовые",
-    "Ударные и перкуссия",
-    "Электронные",
+    "Клавішні",
+    "Струнні",
+    "Духові",
+    "Ударні та перкусія",
+    "Електронні",
 ];
 
 const GROUP_ART = {
-    "Клавишные": "🎹",
-    "Струнные": "🎸",
-    "Духовые": "🎷",
-    "Ударные и перкуссия": "🥁",
-    "Электронные": "🎛️",
+    "Клавішні": "🎹",
+    "Струнні": "🎸",
+    "Духові": "🎷",
+    "Ударні та перкусія": "🥁",
+    "Електронні": "🎛️",
 };
 
 const INSTRUMENT_ART = {
@@ -56,20 +56,20 @@ export default function InstrumentSelect({ options, value, onChange }) {
             >
                 <span className="instrument-select-art" aria-hidden="true">{INSTRUMENT_ART[selected?.id] ?? "♫"}</span>
                 <span className="instrument-select-copy">
-                    <span className="instrument-select-caption">БИБЛИОТЕКА ЗВУКА <span className="instrument-select-count">{options.length}</span></span>
-                    <span className="instrument-select-current">{selected?.name ?? "Выбрать инструмент"}</span>
+                    <span className="instrument-select-caption">БІБЛІОТЕКА ЗВУКУ <span className="instrument-select-count">{options.length}</span></span>
+                    <span className="instrument-select-current">{selected?.name ?? "Вибрати інструмент"}</span>
                 </span>
                 <span className="instrument-select-chevron" aria-hidden="true"><span /></span>
             </button>
 
             {isOpen && (
                 <>
-                    <button className="instrument-picker-backdrop" type="button" aria-label="Закрыть список инструментов" onClick={() => setIsOpen(false)} />
-                    <div className="instrument-picker-menu" role="listbox" aria-label="Музыкальные инструменты">
+                    <button className="instrument-picker-backdrop" type="button" aria-label="Закрити перелік інструментів" onClick={() => setIsOpen(false)} />
+                    <div className="instrument-picker-menu" role="listbox" aria-label="Музичні інструменти">
                         <div className="instrument-picker-heading">
                             <div>
-                                <span className="instrument-picker-eyebrow">ВЫБЕРИ СВОЁ ЗВУЧАНИЕ</span>
-                                <h2>Инструменты</h2>
+                                <span className="instrument-picker-eyebrow">ОБИРИ СВОЄ ЗВУЧАННЯ</span>
+                                <h2>Інструменти</h2>
                             </div>
                             <span className="instrument-picker-total">{options.length} тембра</span>
                         </div>

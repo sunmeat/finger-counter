@@ -71,7 +71,7 @@ export default function Keyboard({ midi, roots, keyboardMidi = [], previewMidi =
         <div
             className="keys"
             role="img"
-            aria-label={midi.length ? `Нажаты клавиши: ${names}` : "Клавиши не нажаты"}
+            aria-label={midi.length ? `Натиснуто клавіші: ${names}` : "Клавіші не натиснуті"}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}

@@ -7,7 +7,7 @@ export default function SoundButton({ soundOn, onClick }) {
 
     return (
         <button type="button" className="sound-btn" onClick={onClick}>
-            Включить звук!
+            Увімкнути звук!
         </button>
     );
 }

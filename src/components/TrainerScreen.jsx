@@ -13,11 +13,11 @@ import "./styles/TrainerScreen.css";
 
 const PROGRESS_KEY = "aerodion.trainer.progress.v1";
 const ATTEMPTS_PER_TARGET = 3;
-const FINGER_NAMES = ["Большой", "Указательный", "Средний", "Безымянный", "Мизинец"];
+const FINGER_NAMES = ["Великий", "Вказівний", "Середній", "Безіменний", "Мізинець"];
 const NATURAL_NOTES = [60, 62, 64, 65, 67, 69, 71];
-const EASY_CHORDS = CHORD_GESTURES.filter((chord) => ["мажор", "минор"].includes(chord.name));
+const EASY_CHORDS = CHORD_GESTURES.filter((chord) => ["мажор", "мінор"].includes(chord.name));
 const MEDIUM_CHORDS = CHORD_GESTURES.filter((chord) =>
-    ["мажор", "минор", "Major 7", "Minor 7", "7", "sus4", "sus2"].includes(chord.name)
+    ["мажор", "мінор", "Major 7", "Minor 7", "7", "sus4", "sus2"].includes(chord.name)
 );
 
 function readProgress() {
@@ -82,10 +82,10 @@ function createTask(mode, difficulty) {
     }
     if (mode === "sequence") {
         const sequence = Array.from({ length: 4 }, () => createChordTarget(difficulty));
-        return { kind: "sequence", difficulty, sequence, prompt: "Повтори последовательность из четырёх аккордов" };
+        return { kind: "sequence", difficulty, sequence, prompt: "Повтори послідовність із чотирьох акордів" };
     }
     const target = createChordTarget(difficulty);
-    return { kind: "chord", difficulty, target, prompt: "Сыграй " + target.label };
+    return { kind: "chord", difficulty, target, prompt: "Зіграй " + target.label };
 }
 
 export default function TrainerScreen(props) {
@@ -99,7 +99,7 @@ export default function TrainerScreen(props) {
     const [solved, setSolved] = useState(false);
     const [exhausted, setExhausted] = useState(false);
     const [attemptsUsed, setAttemptsUsed] = useState(0);
-    const [feedback, setFeedback] = useState({ type: "hint", text: "Покажи нужную комбинацию пальцев в камеру." });
+    const [feedback, setFeedback] = useState({ type: "hint", text: "Покажіть потрібну комбінацію пальців у камеру." });
     const [progress, setProgress] = useState(readProgress);
     const lastAttemptRef = useRef("");
     const celebrationPlayedRef = useRef(false);
@@ -119,7 +119,7 @@ export default function TrainerScreen(props) {
         try {
             localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
         } catch (error) {
-            console.warn("Не удалось сохранить прогресс тренажёра:", error);
+            console.warn("Не вдалося зберегти прогрес тренажера:", error);
         }
     }, [progress]);
 
@@ -130,7 +130,7 @@ export default function TrainerScreen(props) {
         setExhausted(false);
         setAttemptsUsed(0);
         lastAttemptRef.current = "";
-        setFeedback({ type: "hint", text: "Новое задание готово. У тебя есть три попытки." });
+        setFeedback({ type: "hint", text: "Нове завдання готове. У тебе є три спроби." });
     }, [mode, difficulty]);
 
     useEffect(() => {
@@ -159,13 +159,13 @@ export default function TrainerScreen(props) {
             setProgress((current) => recordAttempt(current, correct));
 
             if (correct) {
-                setFeedback({ type: "success", text: "Верно! Это нота " + note.name + "." });
+                setFeedback({ type: "success", text: "Правильно! Це нота " + note.name + "." });
                 setSolved(true);
             } else if (attemptNumber >= ATTEMPTS_PER_TARGET) {
-                setFeedback({ type: "error", text: "Попытки закончились. Правильная нота: " + task.label + ". Попробуй ещё раз." });
+                setFeedback({ type: "error", text: "Спроби скінчилися. Правильна нота: " + task.label + ". Спробуй ще раз." });
                 setExhausted(true);
             } else {
-                setFeedback({ type: "error", text: "Распознана нота " + note.name + ". Осталось попыток: " + (ATTEMPTS_PER_TARGET - attemptNumber) + "." });
+                setFeedback({ type: "error", text: "Розпізнано ноту " + note.name + ". Залишилось спроб: " + (ATTEMPTS_PER_TARGET - attemptNumber) + "." });
             }
             return;
         }
@@ -187,10 +187,10 @@ export default function TrainerScreen(props) {
 
         if (!correct) {
             if (attemptNumber >= ATTEMPTS_PER_TARGET) {
-                setFeedback({ type: "error", text: "Попытки закончились. Правильный ответ: " + target.label + ". Попробуй ещё раз." });
+                setFeedback({ type: "error", text: "Спроби скінчилися. Правильна відповідь: " + target.label + ". Спробуй ще раз." });
                 setExhausted(true);
             } else {
-                setFeedback({ type: "error", text: "Сейчас звучит " + note.name + " " + chord.name + ". Осталось попыток: " + (ATTEMPTS_PER_TARGET - attemptNumber) + "." });
+                setFeedback({ type: "error", text: "Нині звучить " + note.name + " " + chord.name + ". Залишилось спроб: " + (ATTEMPTS_PER_TARGET - attemptNumber) + "." });
             }
             return;
         }
@@ -200,15 +200,15 @@ export default function TrainerScreen(props) {
             if (nextIndex >= task.sequence.length) {
                 setSolved(true);
                 setProgress((current) => ({ ...current, completed: current.completed + 1 }));
-                setFeedback({ type: "success", text: "Цепочка собрана целиком! Все четыре аккорда распознаны." });
+                setFeedback({ type: "success", text: "Ланцюжок зібраний повністю! Усі чотири акорди розпізнані." });
             } else {
                 setSequenceIndex(nextIndex);
                 setAttemptsUsed(0);
-                setFeedback({ type: "success", text: "Верно! Аккорд " + (sequenceIndex + 1) + " из 4. Следующий уже ждёт." });
+                setFeedback({ type: "success", text: "Правильно! Акорд " + (sequenceIndex + 1) + " з 4. Наступний вже чекає." });
             }
         } else {
             setSolved(true);
-            setFeedback({ type: "success", text: "Точно! Распознан аккорд " + target.label + "." });
+            setFeedback({ type: "success", text: "Точно! Розпізнаний акорд " + target.label + "." });
         }
     }, [result, dominant, mode, task, sequenceIndex, solved, exhausted, attemptsUsed]);
 
@@ -249,7 +249,7 @@ export default function TrainerScreen(props) {
         setExhausted(false);
         setAttemptsUsed(0);
         lastAttemptRef.current = "";
-        setFeedback({ type: "hint", text: "Новое задание. У тебя есть три попытки." });
+        setFeedback({ type: "hint", text: "Нове завдання. У тебе є три спроби." });
     };
 
     const retryTask = () => {
@@ -258,13 +258,13 @@ export default function TrainerScreen(props) {
         setExhausted(false);
         setAttemptsUsed(0);
         lastAttemptRef.current = "";
-        setFeedback({ type: "hint", text: "Попробуй ещё раз. У тебя снова три попытки." });
+        setFeedback({ type: "hint", text: "Спробуй ще раз. У тебе знову три спроби." });
     };
 
     const resetProgress = () => {
         const empty = { attempts: 0, correct: 0, completed: 0, streak: 0, bestStreak: 0 };
         setProgress(empty);
-        setFeedback({ type: "hint", text: "Прогресс сброшен. Начинаем с чистого листа." });
+        setFeedback({ type: "hint", text: "Прогрес скинутий. Починаємо із чистого листа." });
     };
 
     const { noteSide } = rolesFor(dominant);
@@ -277,39 +277,39 @@ export default function TrainerScreen(props) {
         ? null
         : CHORD_GESTURES.find((chord) => chord.mask === currentTarget?.chordMask);
     const { noteSide: targetNoteSide, chordSide: targetChordSide } = rolesFor(dominant);
-    const lede = "Тренируй слух и память, а руки пусть отвечают вместо кнопок.";
+    const lede = "Тренуй слух та пам'ять, а руки нехай відповідають замість кнопок.";
 
     return (
         <main className="trainer-page">
-            <AppHeader {...props} title="Обучение" lede={lede} activeSection="learn" onCloseTrainer={onCloseTrainer} />
+            <AppHeader {...props} title="Навчання" lede={lede} activeSection="learn" onCloseTrainer={onCloseTrainer} />
             <section className="trainer-layout">
                 <div className="trainer-main">
                     <div className="trainer-intro">
-                        <span className="trainer-eyebrow">МУЗЫКАЛЬНАЯ ПРАКТИКА</span>
-                        <h2>Поймай правильный звук</h2>
-                        <p>Смотри на задание, собери жест пальцами и держи его перед камерой. Распознавание происходит прямо в браузере.</p>
+                        <span className="trainer-eyebrow">МУЗИЧНА ПРАКТИКА</span>
+                        <h2>Злови правильний звук</h2>
+                        <p>Дивись на завдання, збери жест пальцями та тримай його перед камерою. Розпізнавання відбувається у браузері.</p>
                     </div>
 
                     <div className="trainer-options">
                         <div className="trainer-option-group">
-                            <span className="trainer-label">Что тренируем</span>
+                            <span className="trainer-label">Що тренуємо</span>
                             <div className="trainer-segments">
                                 {[
-                                    ["notes", "Ноты"],
-                                    ["chords", "Аккорды"],
-                                    ["sequence", "Цепочки"],
+                                    ["notes", "Ноти"],
+                                    ["chords", "Акорди"],
+                                    ["sequence", "Ланцюжки"],
                                 ].map(([value, label]) => (
                                     <button key={value} type="button" className={mode === value ? "is-active" : ""} onClick={() => setMode(value)}>{label}</button>
                                 ))}
                             </div>
                         </div>
                         {mode !== "notes" && <div className="trainer-option-group">
-                            <span className="trainer-label">Сложность</span>
+                            <span className="trainer-label">Складність</span>
                             <div className="trainer-segments">
                                 {[
-                                    ["easy", "Начинающий"],
-                                    ["medium", "Музыкант"],
-                                    ["hard", "Виртуоз"],
+                                    ["easy", "Початківець"],
+                                    ["medium", "Музикант"],
+                                    ["hard", "Віртуоз"],
                                 ].map(([value, label]) => (
                                     <button key={value} type="button" className={difficulty === value ? "is-active" : ""} onClick={() => setDifficulty(value)}>{label}</button>
                                 ))}
@@ -319,7 +319,7 @@ export default function TrainerScreen(props) {
 
                     <section className="trainer-task" aria-live="polite">
                         <div className="trainer-task-top">
-                            <span className="trainer-eyebrow">{task.kind === "note" ? "ЗАДАНИЕ · НОТЫ" : task.kind === "sequence" ? "ЗАДАНИЕ · ПАМЯТЬ" : "ЗАДАНИЕ · АККОРДЫ"}</span>
+                            <span className="trainer-eyebrow">{task.kind === "note" ? "ЗАВДАННЯ · НОТИ" : task.kind === "sequence" ? "ЗАВДАННЯ · ПАМ'ЯТЬ" : "ЗАВДАННЯ · АКОРДИ"}</span>
                             {task.kind === "sequence" && <span className="trainer-step">{Math.min(sequenceIndex + 1, 4)} / 4</span>}
                         </div>
                         <h3>{task.prompt}</h3>
@@ -329,7 +329,7 @@ export default function TrainerScreen(props) {
                                     <div key={index} className={"trainer-sequence-item " + (index < sequenceIndex ? "is-done" : index === sequenceIndex ? "is-current" : "")}>
                                         <span>{index + 1}</span>
                                         <strong>{item.label}</strong>
-                                        {index < sequenceIndex && <small>Распознано</small>}
+                                        {index < sequenceIndex && <small>Розпізнано</small>}
                                     </div>
                                 ))}
                             </div>
@@ -341,65 +341,65 @@ export default function TrainerScreen(props) {
                         )}
                         <p className="trainer-task-hint">
                             {task.kind === "note"
-                                ? "Подсказка ниже показывает нужный жест для руки, которая отвечает за ноты."
-                                : "Подсказка показывает нужные пальцы отдельно для ноты и аккорда. Подними только отмеченные пальцы."}
+                                ? "Підказка нижче показує потрібний жест для руки, яка відповідає за ноти."
+                                : "Підказка показує потрібні пальці окремо для ноти та акорду. Підніми лише відмічені пальці."}
                         </p>
-                        <div className="trainer-finger-guides" aria-label="Подсказка по пальцам">
+                        <div className="trainer-finger-guides" aria-label="Підказка на пальцях">
                             <div className="trainer-finger-guide trainer-finger-guide-note">
                                 <div className="trainer-finger-guide-heading">
-                                    <span>{targetNoteSide === "left" ? "Левая рука" : "Правая рука"}</span>
-                                    <strong>Нота: {targetNote?.name ?? "не определена"}</strong>
+                                    <span>{targetNoteSide === "left" ? "Ліва рука" : "Права рука"}</span>
+                                    <strong>Нота: {targetNote?.name ?? "не визначено"}</strong>
                                 </div>
-                                <div className="trainer-fingers" aria-label={"Поднять пальцы: " + (targetNote?.fingers?.map((finger) => FINGER_NAMES[finger - 1]).join(", ") || "нет")}>
+                                <div className="trainer-fingers" aria-label={"Підняти пальці: " + (targetNote?.fingers?.map((finger) => FINGER_NAMES[finger - 1]).join(", ") || "ні")}>
                                     {FINGER_NAMES.map((name, index) => {
                                         const raised = targetNote?.fingers?.includes(index + 1) ?? false;
-                                        return <div key={name} className={"trainer-finger " + (raised ? "is-raised" : "is-bent")}><span>{index + 1}</span><small>{name}</small><strong>{raised ? "Поднять" : "Согнуть"}</strong></div>;
+                                        return <div key={name} className={"trainer-finger " + (raised ? "is-raised" : "is-bent")}><span>{index + 1}</span><small>{name}</small><strong>{raised ? "Підняти" : "Зігнути"}</strong></div>;
                                     })}
                                 </div>
                             </div>
                             <div className={"trainer-finger-guide trainer-finger-guide-chord" + (task.kind === "note" ? " is-optional" : "")}>
                                 <div className="trainer-finger-guide-heading">
-                                    <span>{targetChordSide === "left" ? "Левая рука" : "Правая рука"}</span>
-                                    <strong>{task.kind === "note" ? "Для этой задачи не нужна" : "Аккорд: " + (targetChord?.name ?? "не определён")}</strong>
+                                    <span>{targetChordSide === "left" ? "Ліва рука" : "Права рука"}</span>
+                                    <strong>{task.kind === "note" ? "Для цього завдання не потрібна" : "Акорд: " + (targetChord?.name ?? "не визначено")}</strong>
                                 </div>
-                                <div className="trainer-fingers" aria-label={task.kind === "note" ? "Вторая рука не нужна" : "Пальцы для аккорда"}>
+                                <div className="trainer-fingers" aria-label={task.kind === "note" ? "Друга рука не потрібна" : "Пальці для акорду"}>
                                     {FINGER_NAMES.map((name, index) => {
                                         const raised = targetChord?.fingers?.includes(index + 1) ?? false;
-                                        return <div key={name} className={"trainer-finger " + (task.kind === "note" ? "is-unused" : raised ? "is-raised" : "is-bent")}><span>{index + 1}</span><small>{name}</small><strong>{task.kind === "note" ? "Не нужна" : raised ? "Поднять" : "Согнуть"}</strong></div>;
+                                        return <div key={name} className={"trainer-finger " + (task.kind === "note" ? "is-unused" : raised ? "is-raised" : "is-bent")}><span>{index + 1}</span><small>{name}</small><strong>{task.kind === "note" ? "Не потрібна" : raised ? "Підняти" : "Зігнути"}</strong></div>;
                                     })}
                                 </div>
                             </div>
                         </div>
-                        <p className="trainer-attempt-counter" role="status">Попытки: {attemptsUsed} из {ATTEMPTS_PER_TARGET}</p>
+                        <p className="trainer-attempt-counter" role="status">Спроби: {attemptsUsed} з {ATTEMPTS_PER_TARGET}</p>
                         <div className={"trainer-feedback is-" + feedback.type} role="status">{feedback.text}</div>
-                        {(solved || exhausted) && <button type="button" className="trainer-next" onClick={exhausted ? retryTask : nextTask}>{exhausted ? "Повторить задание ↻" : task.kind === "sequence" ? "Новая последовательность →" : "Следующее задание →"}</button>}
+                        {(solved || exhausted) && <button type="button" className="trainer-next" onClick={exhausted ? retryTask : nextTask}>{exhausted ? "Повторити завдання ↻" : task.kind === "sequence" ? "Нова послідовність →" : "Наступне завдання →"}</button>}
                     </section>
 
                     <div className="trainer-stats">
-                        <div><strong>{accuracy === null ? "—" : accuracy + "%"}</strong><span>точность</span></div>
-                        <div><strong>{progress.streak}</strong><span>серия сейчас</span></div>
-                        <div><strong>{progress.bestStreak}</strong><span>лучшая серия</span></div>
-                        <div><strong>{progress.completed}</strong><span>цепочек пройдено</span></div>
+                        <div><strong>{accuracy === null ? "—" : accuracy + "%"}</strong><span>точність</span></div>
+                        <div><strong>{progress.streak}</strong><span>серія зараз</span></div>
+                        <div><strong>{progress.bestStreak}</strong><span>найкраща серія</span></div>
+                        <div><strong>{progress.completed}</strong><span>ланцюжків пройдено</span></div>
                     </div>
-                    <button type="button" className="trainer-reset" onClick={resetProgress}>Сбросить личный прогресс</button>
+                    <button type="button" className="trainer-reset" onClick={resetProgress}>Скинути особистий прогрес</button>
                 </div>
 
                 <aside className="trainer-camera">
                     <div className="trainer-camera-heading">
-                        <span className="trainer-eyebrow">КАМЕРА</span>
-                        <h3>Твои руки, твой инструмент</h3>
-                        <p>{props.status || "Покажи руки в кадре"}</p>
+                        <span className="trainer-eyebrow">Камера</span>
+                        <h3>Твої руки, твій інструмент</h3>
+                        <p>{props.status || "Покажи руки у кадрі"}</p>
                     </div>
                     <div className={"trainer-stage" + (props.cameraFacing === "environment" ? " trainer-stage-back-camera" : "")}>
                         <video ref={trainerVideoRef} autoPlay muted playsInline />
                         <canvas ref={trainerCanvasRef} aria-hidden="true" />
                         <button type="button" className="trainer-camera-toggle" onClick={props.onToggleCamera}>
-                            {props.cameraFacing === "environment" ? "↻ Фронтальная" : "↻ Задняя камера"}
+                            {props.cameraFacing === "environment" ? "↻ Фронтальна" : "↻ Задня камера"}
                         </button>
-                        {!result && <span className="trainer-stage-status">{props.status || "Ожидаю камеру…"}</span>}
+                        {!result && <span className="trainer-stage-status">{props.status || "Чекаю на камеру…"}</span>}
                     </div>
                     <CurrentSound result={result} soundOn={props.soundOn} noteSide={noteSide} />
-                    <p className="trainer-privacy">Прогресс сохраняется только в этом браузере. Регистрация не нужна.</p>
+                    <p className="trainer-privacy">Прогрес зберігається лише у цьому браузері. Реєстрація не потрібна.</p>
                 </aside>
             </section>
         </main>

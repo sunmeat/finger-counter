@@ -28,7 +28,7 @@ export function usePianoApp(trackingEnabled = true) {
     const playerRef = useRef(null);
     if (!playerRef.current) playerRef.current = new Player();
 
-    const [status, setStatus] = useState("Загрузка модели…");
+    const [status, setStatus] = useState("Завантаження моделі…");
     const [result, setResult] = useState(null);
     const [soundOn, setSoundOn] = useState(false);
     const [instrument, setInstrument] = useState("piano");
@@ -43,7 +43,7 @@ export function usePianoApp(trackingEnabled = true) {
         try {
             localStorage.setItem(SETTINGS_KEY, JSON.stringify({ dominant, gestures }));
         } catch (error) {
-            console.warn("Не удалось сохранить настройки:", error);
+            console.warn("Не вдалося зберегти налаштування:", error);
         }
     }, [dominant, gestures]);
 
@@ -84,12 +84,12 @@ export function usePianoApp(trackingEnabled = true) {
     const onStatus = useCallback((value) => setStatus(value), []);
     const onRetry = useCallback(() => {
         setResult(null);
-        setStatus("Повторная инициализация…");
+        setStatus("Повторна ініціалізація…");
         setRetryToken((value) => value + 1);
     }, []);
     const onToggleCamera = useCallback(() => {
         setResult(null);
-        setStatus("Переключаю камеру…");
+        setStatus("Перемикаю камеру.");
         setCameraFacing((current) => current === "user" ? "environment" : "user");
     }, []);
 
@@ -98,7 +98,7 @@ export function usePianoApp(trackingEnabled = true) {
             await playerRef.current.start();
             setSoundOn(true);
         } catch (error) {
-            console.error("Не удалось включить звук:", error);
+            console.error("Не вдалося ввімкнути звук:", error);
         }
     }, []);
 

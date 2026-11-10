@@ -1,7 +1,7 @@
 {
   "name": "Finger Counter",
   "short_name": "Finger Counter",
-  "lang": "ru",
+  "lang": "uk",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#101a23",

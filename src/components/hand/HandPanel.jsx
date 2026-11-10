@@ -6,7 +6,7 @@ export default function HandPanel({ side, tone, title, role, seen, rows, note, o
             <header className="panel-head">
                 <h2 className="panel-title">{title}</h2>
                 <p className="panel-role">{role}</p>
-                <span className={`seen${seen ? " on" : ""}`}>{seen ? "в кадре" : "не видно"}</span>
+                <span className={`seen${seen ? " on" : ""}`}>{seen ? "у кадрі" : "не видно"}</span>
             </header>
             <ul className="rows">
                 {rows.map((r) => (

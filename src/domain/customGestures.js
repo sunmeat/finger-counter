@@ -8,19 +8,19 @@ export const GESTURE_PROFILES = {
 
 export const CHORD_TYPES = [
     { id: "major", name: "Мажор", intervals: [0, 4, 7] },
-    { id: "minor", name: "Минор", intervals: [0, 3, 7] },
-    { id: "major7", name: "Major 7", intervals: [0, 4, 7, 11] },
-    { id: "minor7", name: "Minor 7", intervals: [0, 3, 7, 10] },
-    { id: "seventh", name: "Доминантсептаккорд", intervals: [0, 4, 7, 10] },
+    { id: "minor", name: "Мінор", intervals: [0, 3, 7] },
+    { id: "major7", name: "Мажорний септакорд", intervals: [0, 4, 7, 11] },
+    { id: "minor7", name: "Мінорний септакорд", intervals: [0, 3, 7, 10] },
+    { id: "seventh", name: "Домінантсептакорд", intervals: [0, 4, 7, 10] },
     { id: "sus4", name: "Sus4", intervals: [0, 5, 7] },
     { id: "sus2", name: "Sus2", intervals: [0, 2, 7] },
-    { id: "diminished", name: "Уменьшённый", intervals: [0, 3, 6] },
+    { id: "diminished", name: "Зменшений", intervals: [0, 3, 6] },
 ];
 
 export const GESTURE_ACTIONS = [
-    { id: "octave-up", name: "Поднять октаву" },
-    { id: "octave-down", name: "Опустить октаву" },
-    { id: "instrument", name: "Сменить инструмент" },
+    { id: "octave-up", name: "Підняти октаву" },
+    { id: "octave-down", name: "Опустити октаву" },
+    { id: "instrument", name: "Змінити інструмент" },
 ];
 
 export const ALL_MASKS = Array.from({ length: 32 }, (_, value) => value.toString(2).padStart(5, "0"));
@@ -47,30 +47,30 @@ export function validateGestures(gestures) {
 }
 
 export function normalizeGestures(value) {
-    if (!Array.isArray(value)) throw new Error("В JSON ожидается массив gestures.");
-    if (value.length !== 64) throw new Error("Неполная раскладка: JSON должен содержать ровно 64 комбинации, по 32 для каждой руки.");
+    if (!Array.isArray(value)) throw new Error("У JSON очікується масив gestures.");
+    if (value.length !== 64) throw new Error("Неповна розкладка: JSON повинен містити рівно 64 комбінації, по 32 для кожної руки.");
     const normalized = value.map((item, index) => {
         if (!item || !["left", "right"].includes(item.side) ||
             !/^([01]{5})$/.test(item.mask) ||
             !["default", "note", "chord", ...GESTURE_ACTIONS.map(({ id }) => id)].includes(item.type)) {
-            throw new Error("Некорректный жест №" + (index + 1) + ".");
+            throw new Error("Некоректний жест №" + (index + 1) + ".");
         }
         if (item.type === "note" && (!Number.isInteger(item.target) || item.target < 48 || item.target > 84)) {
-            throw new Error("Для жеста №" + (index + 1) + " выберите ноту в диапазоне MIDI 48–84.");
+            throw new Error("Для жесту №" + (index + 1) + " Виберіть ноту в діапазоні MIDI 48–84.");
         }
         if (item.type === "chord" && !CHORD_TYPES.some(({ id }) => id === item.target)) {
-            throw new Error("Для жеста №" + (index + 1) + " выберите аккорд.");
+            throw new Error("Для жесту №" + (index + 1) + " Виберіть акорд.");
         }
         if (item.type === "instrument" && typeof item.target !== "string") {
-            throw new Error("Для жеста №" + (index + 1) + " выберите инструмент.");
+            throw new Error("Для жесту №" + (index + 1) + " виберіть інструмент.");
         }
         return { id: String(item.id || item.side + "-" + item.mask), side: item.side, mask: item.mask, type: item.type, target: item.target ?? "" };
     });
     const keys = new Set(normalized.map((item) => item.side + ":" + item.mask));
-    if (keys.size !== 64) throw new Error("В JSON есть повторяющиеся комбинации руки и пальцев.");
+    if (keys.size !== 64) throw new Error("У JSON є повторювані комбінації руки та пальців.");
     for (const side of ["left", "right"]) {
         for (const mask of ALL_MASKS) {
-            if (!keys.has(side + ":" + mask)) throw new Error("В JSON отсутствует комбинация " + side + " / " + mask + ".");
+            if (!keys.has(side + ":" + mask)) throw new Error("У JSON відсутня комбінація " + side + " / " + mask + ".");
         }
     }
     return normalized;

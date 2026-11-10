@@ -7,11 +7,11 @@ export default function CurrentSound({ result, soundOn, noteSide }) {
             {result?.chord ? (
                 <>
                     <p className="now-chord">{result.chord}</p>
-                    <p className="now-notes">Ноты: {result.midi.map((m) => NOTE_NAMES[m % 12]).join(", ")}</p>
-                    {!soundOn && <p className="now-hint">Нажмите «Звук выключен», чтобы услышать</p>}
+                    <p className="now-notes">Ноти: {result.midi.map((m) => NOTE_NAMES[m % 12]).join(", ")}</p>
+                    {!soundOn && <p className="now-hint">Натисніть «Звук вимкнено», щоб почути</p>}
                 </>
             ) : (
-                <p className="now-chord idle">Поднимите пальцы {noteSide === "left" ? "левой" : "правой"} руки</p>
+                <p className="now-chord idle">Підніміть пальці {noteSide === "left" ? "лівий" : "правою"} руки</p>
             )}
         </section>
     );

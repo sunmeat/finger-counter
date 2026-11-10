@@ -47,14 +47,14 @@ export default function RecorderControls({ videoRef }) {
         setBusy(true);
         try {
             if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-                throw new Error("Этот браузер не поддерживает запись видео.");
+                throw new Error("Цей браузер не підтримує запис відео.");
             }
 
             const cameraVideo = videoRef?.current;
             const sourceStream = cameraVideo?.srcObject;
             const sourceTrack = sourceStream?.getVideoTracks?.()[0];
             if (!sourceTrack || sourceTrack.readyState !== "live") {
-                throw new Error("Камера ещё не готова. Подождите, пока появится изображение, и попробуйте снова.");
+                throw new Error("Камера ще не готова. Зачекайте, поки з'явиться зображення, і спробуйте знову.");
             }
 
             const cameraTrack = sourceTrack.clone();
@@ -73,19 +73,19 @@ export default function RecorderControls({ videoRef }) {
                 });
                 microphoneStreamRef.current = microphoneStream;
             } catch {
-                throw new Error("Не удалось получить доступ к микрофону. Разрешите микрофон для сайта и попробуйте ещё раз.");
+                throw new Error("Не вдалося отримати доступ до мікрофону. Дозвольте мікрофон для сайту та спробуйте ще раз.");
             }
 
             const microphoneTracks = microphoneStream.getAudioTracks();
             if (microphoneTracks.length === 0) {
-                throw new Error("Микрофон не передал аудиосигнал. Проверьте выбранный микрофон в настройках браузера.");
+                throw new Error("Мікрофон не передав аудіосигнал. Перевірте вибраний мікрофон у налаштуваннях браузера.");
             }
 
             const audioMixer = createRecordingAudioMixer(microphoneStream);
             audioMixerRef.current = audioMixer;
             const mixedAudioTrack = audioMixer.stream.getAudioTracks()[0];
             if (!mixedAudioTrack) {
-                throw new Error("Не удалось объединить звук микрофона и пианино. Попробуйте ещё раз.");
+                throw new Error("Не вдалося об'єднати звук мікрофона та піаніно. Спробуйте ще раз.");
             }
             const output = new MediaStream([cameraTrack, mixedAudioTrack]);
             chunksRef.current = [];
@@ -97,7 +97,7 @@ export default function RecorderControls({ videoRef }) {
                 if (event.data.size > 0) chunksRef.current.push(event.data);
             };
             recorder.onerror = () => {
-                setError("Во время записи произошла ошибка. Попробуйте ещё раз.");
+                setError("Під час запису сталася помилка. Спробуйте ще раз.");
             };
             recorder.onstop = () => {
                 const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
@@ -108,7 +108,7 @@ export default function RecorderControls({ videoRef }) {
                         return URL.createObjectURL(blob);
                     });
                 } else {
-                    setError("Видео не удалось сохранить. Попробуйте записать ещё раз.");
+                    setError("Відео не вдалося зберегти. Спробуйте ще раз записати.");
                 }
                 setRecording(false);
                 releaseCapture();
@@ -122,9 +122,9 @@ export default function RecorderControls({ videoRef }) {
         } catch (captureError) {
             releaseCapture();
             if (captureError?.name !== "NotAllowedError") {
-                setError(captureError?.message || "Не удалось начать запись.");
+                setError(captureError?.message || "Не вдалося розпочати запис.");
             } else {
-                setError("Разрешите доступ к микрофону в настройках браузера и нажмите запись ещё раз.");
+                setError("Дозволіть доступ до мікрофона в установках браузера та натисніть ще раз.");
             }
         } finally {
             setBusy(false);
@@ -154,47 +154,47 @@ export default function RecorderControls({ videoRef }) {
         });
         try {
             if (navigator.share && navigator.canShare?.({ files: [file] })) {
-                await navigator.share({ title: "Музыка на пальцах", text: "Моя музыка на пальцах 🎹", files: [file] });
+                await navigator.share({ title: "Музика на пальцях", text: "Моя музика на пальцях 🎹", files: [file] });
                 return;
             }
             downloadVideo();
-            setError("Этот браузер не поддерживает отправку видеофайла напрямую. Видео скачано: прикрепите его к сообщению или публикации.");
+            setError("Цей браузер не підтримує відправлення відео безпосередньо. Відео завантажено: прикріпіть його до повідомлення чи публікації.");
         } catch (shareError) {
             if (shareError?.name !== "AbortError") {
-                setError("Не удалось открыть меню отправки. Скачайте видео и прикрепите его вручную.");
+                setError("Не вдалося відкрити меню надсилання. Завантажте відео та прикріпіть його вручну.");
             }
         }
     };
 
     return (
-        <section className="recorder" aria-label="Запись исполнения">
+        <section className="recorder" aria-label="Запис виконання">
             <div className="recorder-copy">
-                <span className="recorder-eyebrow">ТВОЁ ИСПОЛНЕНИЕ</span>
-                <h2>Спой и сыграй пальцами</h2>
-                <p>Записывается камера, твой голос и звук пианино. Интерфейс, подсказки и подсветки в ролик не попадают. Видео остаётся на твоём устройстве.</p>
+                <span className="recorder-eyebrow">ТВОЕ ВИКОНАННЯ</span>
+                <h2>Заспівай і зіграй пальцями</h2>
+                <p>Записується камера, твій голос та звук піаніно. Інтерфейс, підказки та підсвічування в ролик не потрапляють. Відео залишається на твоєму пристрої.</p>
             </div>
             <div className="recorder-actions">
                 {recording ? (
                     <button className="recorder-button recorder-stop" type="button" onClick={stopRecording}>
-                        <span className="recorder-dot" /> Остановить запись
+                        <span className="recorder-dot" /> Зупинити запис
                     </button>
                 ) : (
                     <button className="recorder-button" type="button" onClick={startRecording} disabled={busy}>
-                        {busy ? "Подготовка…" : "● Записать видео"}
+                        {busy ? "Підготовка..." : "● Записати відео"}
                     </button>
                 )}
                 {videoBlob && !recording && (
                     <>
                         <button className="recorder-button recorder-secondary" type="button" onClick={downloadVideo}>
-                            ↓ Скачать видео
+                            ↓ Завантажити відео
                         </button>
                         <button className="recorder-button recorder-secondary" type="button" onClick={shareVideo}>
-                            ↗ Поделиться
+                            ↗ Поділитися
                         </button>
                     </>
                 )}
             </div>
-            {recording && <p className="recorder-hint">Записываются камера, микрофон и звук пианино. Интерфейс приложения в ролик не попадает.</p>}
+            {recording && <p className="recorder-hint">Записуються камера, мікрофон та звук піаніно. Інтерфейс програми до ролика не потрапляє.</p>}
             {videoBlob && !recording && <video className="recorder-preview" src={videoUrl} controls playsInline />}
             {error && <p className="recorder-error" role="status">{error}</p>}
         </section>

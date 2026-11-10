@@ -75,7 +75,7 @@ export default function useHandTracking({
     useEffect(() => {
         if (!enabled) {
             onResult(null);
-            onStatus("Камера приостановлена в настройках");
+            onStatus("Камера призупинена у налаштуваннях");
             handFrameRef.current?.([]);
             player.releaseAll();
             return undefined;
@@ -177,7 +177,7 @@ export default function useHandTracking({
             } catch (gpuError) {
                 if (cancelled) return null;
 
-                console.warn("GPU недоступен, переключаюсь на CPU:", gpuError);
+                console.warn("GPU недоступний, перемикаюся на CPU:", gpuError);
 
                 return HandLandmarker.createFromOptions(vision, {
                     baseOptions: {
@@ -205,7 +205,7 @@ export default function useHandTracking({
 
                 if (!landmarker) return;
 
-                onStatus("Запрашиваю доступ к камере…");
+                onStatus("Запрошую доступ до камери.");
 
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { width: 640, height: 480, facingMode: { ideal: cameraFacing } },
@@ -229,7 +229,7 @@ export default function useHandTracking({
                     return;
                 }
 
-                onStatus("Покажите руки в камеру");
+                onStatus("Покажіть руки в камеру");
 
                 const canvas = canvasRef.current;
                 canvas.width = video.videoWidth;
@@ -317,7 +317,7 @@ export default function useHandTracking({
                                         key: "custom-note:" + matchedGesture.id + ":" + matchedGesture.target,
                                         midi: [Number(matchedGesture.target)],
                                         roots: [Number(matchedGesture.target)],
-                                        label: "Пользовательская нота",
+                                        label: "Нота користувача",
                                     };
                                 } else if (matchedGesture.type === "chord") {
                                     const chordType = CHORD_TYPES.find(({ id }) => id === matchedGesture.target);
@@ -392,13 +392,13 @@ export default function useHandTracking({
                 console.error(e);
 
                 if (e?.name === "NotAllowedError") {
-                    onStatus("Доступ к камере запрещён. Разрешите камеру в настройках браузера и нажмите «Повторить».");
+                    onStatus("Доступ до камери заборонено. Дозвольте камеру у налаштуваннях браузера та натисніть кнопку «Повторити».");
                 } else if (e?.name === "NotFoundError") {
-                    onStatus("Камера не найдена. Подключите камеру и нажмите «Повторить».");
+                    onStatus("Камеру не знайдено. Підключіть камеру та натисніть кнопку «Повторити».");
                 } else if (e?.name === "NotReadableError") {
-                    onStatus("Камера занята другим приложением. Закройте его и нажмите «Повторить».");
+                    onStatus("Камера зайнята іншим застосунком. Закрийте його та натисніть «Повторити».");
                 } else {
-                    onStatus("Не удалось запустить камеру или модель. Нажмите «Повторить».");
+                    onStatus("Не вдалося запустити камеру чи модель. Натисніть кнопку «Повторити».");
                 }
             }
         }
